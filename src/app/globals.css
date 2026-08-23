@@ -26,6 +26,9 @@
   --color-warn: #f59e0b;
   --color-safe: #10b981;
 
+  /* Узкие телефоны (320–390 px) — отдельная ступень, иначе заголовки жмутся */
+  --breakpoint-xs: 26rem;
+
   --font-sans: var(--font-manrope), ui-sans-serif, system-ui, -apple-system,
     "Segoe UI", Roboto, sans-serif;
 
@@ -101,6 +104,22 @@
   100% {
     transform: scale(2.6);
     opacity: 0;
+  }
+}
+
+/*
+ * Раньше акцент в заголовке заливался keyframes shimmer с позициями
+ * -200%..200%. При background-size: 200% градиент на краях уходил за пределы
+ * текста целиком, и строка на несколько секунд становилась прозрачной —
+ * заголовок буквально пропадал. Держим позицию в диапазоне 0..100%.
+ */
+@keyframes water-text {
+  0%,
+  100% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
   }
 }
 
@@ -201,11 +220,11 @@ html.lenis {
     var(--color-water-400) 42%,
     var(--color-water-700) 100%
   );
-  background-size: 200% 100%;
+  background-size: 250% 100%;
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
-  animation: shimmer 7s linear infinite;
+  animation: water-text 9s ease-in-out infinite;
 }
 
 /* ── Поверхности ──────────────────────────────────────────── */
@@ -413,8 +432,8 @@ html.lenis {
     var(--color-water-100) 37%,
     var(--color-water-50) 63%
   );
-  background-size: 400% 100%;
-  animation: shimmer 1.6s linear infinite;
+  background-size: 300% 100%;
+  animation: water-text 1.6s linear infinite;
 }
 
 input[type="range"].water-range {

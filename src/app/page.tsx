@@ -17,7 +17,7 @@ import {
   SmoothScroll,
   Tilt,
 } from "@/components/motion";
-import { FloatCard, WaterBlobs, WaveDivider } from "@/components/Water";
+import { WaterBlobs, WaveDivider } from "@/components/Water";
 import { ForecastPanel } from "@/components/ForecastPanel";
 import {
   IconAlert,
@@ -77,7 +77,7 @@ export default function Home() {
         {/* ─── Герой ─────────────────────────────────────── */}
         <section
           ref={heroRef}
-          className="relative flex min-h-dvh items-center justify-center px-5 pt-28 pb-24"
+          className="relative flex min-h-dvh items-center justify-center px-4 pt-24 pb-32 sm:px-5 sm:pt-28 sm:pb-24"
         >
           <WaterBlobs />
           <div className="grid-paper absolute inset-0" aria-hidden />
@@ -86,20 +86,7 @@ export default function Home() {
             style={{ y: heroY, opacity: heroFade, scale: heroScale }}
             className="relative z-10 mx-auto w-full max-w-4xl text-center"
           >
-            <motion.div
-              initial={{ opacity: 0, y: 16 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
-              className="mb-7 inline-flex items-center gap-2 rounded-full border border-water-200 bg-white/70 px-4 py-1.5 text-xs font-bold text-water-700 backdrop-blur"
-            >
-              <span className="relative flex h-2 w-2">
-                <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-water-400 opacity-75" />
-                <span className="relative inline-flex h-2 w-2 rounded-full bg-water-500" />
-              </span>
-              {t.landing.badge}
-            </motion.div>
-
-            <h1 className="display text-[3rem] leading-[0.92] sm:text-[4.5rem] lg:text-[5.75rem]">
+            <h1 className="display text-[2.4rem] leading-[0.95] xs:text-[3rem] sm:text-[4rem] lg:text-[5.25rem]">
               <RevealWords text={t.landing.title} immediate />{" "}
               <span className="text-water">
                 <RevealWords
@@ -114,7 +101,7 @@ export default function Home() {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.9, delay: 0.45 }}
-              className="lead mx-auto mt-7 max-w-2xl text-base sm:text-xl"
+              className="lead mx-auto mt-5 max-w-2xl text-sm sm:mt-7 sm:text-xl"
             >
               {t.landing.subtitle}
             </motion.p>
@@ -123,65 +110,91 @@ export default function Home() {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.9, delay: 0.6 }}
-              className="mt-10 flex flex-wrap items-center justify-center gap-3"
+              className="mt-7 flex flex-col items-stretch justify-center gap-2.5 xs:flex-row xs:items-center sm:mt-10 sm:gap-3"
             >
-              <Magnetic>
+              <Magnetic className="w-full xs:w-auto">
                 <Link
                   href="/map"
-                  className="btn btn-primary px-8 py-4 text-base sm:text-lg"
+                  className="btn btn-primary w-full px-8 py-3.5 text-base xs:w-auto sm:py-4 sm:text-lg"
                 >
                   {t.landing.ctaMap}
                 </Link>
               </Magnetic>
-              <Magnetic strength={0.22}>
+              <Magnetic strength={0.22} className="w-full xs:w-auto">
                 <Link
                   href="/report"
-                  className="btn btn-ghost px-8 py-4 text-base sm:text-lg"
+                  className="btn btn-ghost w-full px-8 py-3.5 text-base xs:w-auto sm:py-4 sm:text-lg"
                 >
                   {t.landing.ctaReport}
                 </Link>
               </Magnetic>
             </motion.div>
 
-            {/* Плавающие карточки — на широком экране */}
-            <div className="pointer-events-none absolute inset-0 hidden lg:block">
-              <FloatCard
-                label={t.risk.title}
-                value={risk ? t.risk.levels[risk.level] : "—"}
-                dotColor={risk ? RISK_COLOR[risk.level] : undefined}
-                className="-top-4 -left-24"
-                delay={0.8}
-              />
-              <FloatCard
-                label={t.landing.live.active}
-                value={String(stats?.active ?? 0)}
-                className="top-32 -right-28"
-                delay={0.95}
-              />
-              <FloatCard
-                label={t.landing.live.roads}
-                value={String(stats?.roadsBlocked ?? 0)}
-                className="-bottom-8 -left-16"
-                delay={1.1}
-              />
-              <FloatCard
-                label={t.landing.live.river}
-                value={
-                  hydro?.discharge != null
-                    ? `${Math.round(hydro.discharge)} ${t.hydro.unit}`
-                    : "—"
-                }
-                className="-bottom-4 lg:-right-10"
-                delay={1.25}
-              />
-            </div>
+            {/*
+              Живая строка вместо плавающих карточек. Те висели абсолютно и
+              жили только на широком экране; эта — обычная сетка, одинаково
+              работает от 320 px до десктопа и показывает то же самое.
+            */}
+            <motion.dl
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.9, delay: 0.75 }}
+              className="mx-auto mt-6 grid w-full max-w-2xl grid-cols-2 gap-2 sm:mt-12 sm:grid-cols-4 sm:gap-3"
+            >
+              {[
+                {
+                  label: t.hydro.discharge,
+                  value:
+                    hydro?.discharge != null
+                      ? `${Math.round(hydro.discharge)}`
+                      : "—",
+                  unit: t.hydro.unit,
+                },
+                {
+                  label: t.hydro.anomaly,
+                  value:
+                    hydro?.anomalyPct != null
+                      ? `${hydro.anomalyPct > 0 ? "+" : ""}${hydro.anomalyPct}%`
+                      : "—",
+                },
+                {
+                  label: t.risk.title,
+                  value: risk ? t.risk.levels[risk.level] : "—",
+                  color: risk ? RISK_COLOR[risk.level] : undefined,
+                },
+                {
+                  label: t.dashboard.last24,
+                  value: String(stats?.last24h ?? 0),
+                },
+              ].map((f) => (
+                <div
+                  key={f.label}
+                  className="glass rounded-2xl px-3 py-3.5 text-center"
+                >
+                  <dt className="text-[9px] leading-tight font-bold tracking-wide text-ink-soft uppercase sm:text-[10px]">
+                    {f.label}
+                  </dt>
+                  <dd
+                    className="mt-1 text-base leading-none font-extrabold tracking-[-0.03em] tabular-nums sm:text-lg"
+                    style={{ color: f.color ?? "var(--color-water-700)" }}
+                  >
+                    {f.value}
+                    {f.unit && (
+                      <span className="ml-1 text-[10px] font-semibold text-ink-soft">
+                        {f.unit}
+                      </span>
+                    )}
+                  </dd>
+                </div>
+              ))}
+            </motion.dl>
           </motion.div>
 
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 1.4 }}
-            className="absolute bottom-24 left-1/2 z-10 -translate-x-1/2 md:bottom-10"
+            className="absolute bottom-24 left-1/2 z-10 hidden -translate-x-1/2 sm:block md:bottom-10"
           >
             <div className="flex flex-col items-center gap-2 text-[10px] font-bold tracking-[0.2em] text-ink-soft uppercase">
               {t.landing.scroll}
@@ -614,7 +627,7 @@ export default function Home() {
                     {i === 0 && (
                       <div className="mt-4 inline-flex items-center gap-1.5 rounded-full bg-water-500 px-3 py-1 text-[10px] font-bold text-white">
                         <span className="h-1.5 w-1.5 rounded-full bg-white" />
-                        {t.landing.badge}
+                        {t.landing.roadmap.current}
                       </div>
                     )}
                   </div>
@@ -691,7 +704,8 @@ export default function Home() {
                 <p className="mt-1 text-sm">{t.landing.footer.made}</p>
               </div>
 
-              <div className="flex flex-col gap-3">
+              {/* py-2 — чтобы по ссылке можно было попасть пальцем */}
+              <div className="-my-2 flex flex-col">
                 {(
                   [
                     ["/map", t.nav.map],
@@ -703,7 +717,7 @@ export default function Home() {
                   <Link
                     key={href}
                     href={href}
-                    className="text-sm font-semibold hover:text-white"
+                    className="py-2 text-sm font-semibold transition-colors hover:text-white"
                   >
                     {label}
                   </Link>

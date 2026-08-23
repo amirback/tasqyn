@@ -41,10 +41,10 @@ export function Nav({ transparent = false }: { transparent?: boolean }) {
       >
         <Link
           href="/"
-          className="flex shrink-0 items-center gap-2.5"
+          className="flex min-h-9 shrink-0 items-center gap-2.5"
           aria-label="Tasqyn"
         >
-          <Logo className="h-8 w-8 sm:h-9 sm:w-9" />
+          <Logo className="h-9 w-9" />
           <Wordmark className="hidden sm:inline" />
         </Link>
 

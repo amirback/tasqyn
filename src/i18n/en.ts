@@ -52,9 +52,8 @@ export const en: Dict = {
     dayAgo: "{n} d ago",
   },
   landing: {
-    badge: "Pilot — Uralsk, West Kazakhstan",
-    title: "Where the water is",
-    titleAccent: "right now",
+    title: "A forecast that arrives",
+    titleAccent: "before the water",
     subtitle:
       "Residents of Uralsk mark where water is standing and which roads are cut. Alongside it: river discharge on the Zhayyk and the weather forecast.",
     ctaMap: "Open the map",
@@ -206,6 +205,7 @@ export const en: Dict = {
     roadmap: {
       kicker: "Plan",
       title: "From Uralsk outward",
+      current: "Current phase",
       phases: [
         {
           n: "Phase 1",

@@ -38,7 +38,7 @@ export function LangSwitch({
         <button
           key={l}
           onClick={() => setLocale(l)}
-          className={`relative rounded-full px-2.5 py-1 font-bold transition-colors ${
+          className={`relative grid min-h-[2.4rem] min-w-[2.6rem] place-items-center rounded-full px-2 font-bold transition-colors ${
             locale === l
               ? "text-white"
               : dark

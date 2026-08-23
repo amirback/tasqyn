@@ -334,7 +334,7 @@ export default function MapPage() {
                 <button
                   key={p.id}
                   onClick={() => setPeriod(p.id)}
-                  className={`relative rounded-full px-3 py-1.5 text-xs font-bold whitespace-nowrap transition-colors ${
+                  className={`relative min-h-9 rounded-full px-3.5 py-2 text-xs font-bold whitespace-nowrap transition-colors ${
                     period === p.id ? "text-white" : "text-ink-soft"
                   }`}
                 >
@@ -358,7 +358,7 @@ export default function MapPage() {
                   <button
                     key={k}
                     onClick={() => toggleKind(k)}
-                    className={`rounded-full px-3 py-1.5 text-xs font-bold whitespace-nowrap transition-all ${
+                    className={`min-h-9 rounded-full px-3.5 py-2 text-xs font-bold whitespace-nowrap transition-all ${
                       on
                         ? "bg-white text-ink shadow-sm"
                         : "text-ink-soft/50 grayscale"
@@ -373,7 +373,7 @@ export default function MapPage() {
 
             <button
               onClick={() => setShowHeat((v) => !v)}
-              className={`glass pointer-events-auto shrink-0 rounded-full px-4 py-2 text-xs font-bold whitespace-nowrap ${
+              className={`glass pointer-events-auto min-h-11 shrink-0 rounded-full px-4 py-2 text-xs font-bold whitespace-nowrap ${
                 showHeat ? "text-water-700" : "text-ink-soft/60"
               }`}
             >

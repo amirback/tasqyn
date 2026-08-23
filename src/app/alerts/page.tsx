@@ -199,7 +199,7 @@ export default function AlertsPage() {
                     icon: "/icon-192.png",
                   })
                 }
-                className="btn btn-ghost px-4 py-2 text-xs"
+                className="btn btn-ghost min-h-10 px-4 py-2 text-xs"
               >
                 {t.alerts.test}
               </button>
@@ -208,7 +208,7 @@ export default function AlertsPage() {
               permission !== "unsupported" && (
                 <button
                   onClick={() => void requestPermission()}
-                  className="btn btn-primary px-4 py-2 text-xs"
+                  className="btn btn-primary min-h-10 px-4 py-2 text-xs"
                 >
                   {t.alerts.notificationsOff}
                 </button>
