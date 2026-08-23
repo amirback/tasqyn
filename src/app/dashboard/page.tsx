@@ -59,16 +59,32 @@ export default function DashboardPage() {
   const [password, setPassword] = useState("");
   const [wrong, setWrong] = useState(false);
   const [data, setData] = useState<DashData | null>(null);
+  const [failed, setFailed] = useState(false);
   const [focus, setFocus] = useState<{ lat: number; lng: number }>();
 
+  /**
+   * Любой неожиданный ответ обрабатываем явно. Однажды из деплоя выпал сам
+   * маршрут, сервер отдал HTML-страницу 404, и res.json() уронил панель
+   * необработанным исключением — оперативный экран так вести себя не должен.
+   */
   const load = useCallback(async () => {
-    const res = await fetch("/api/dashboard/data", { cache: "no-store" });
-    if (res.status === 401) {
-      setAuthed(false);
-      return;
+    try {
+      const res = await fetch("/api/dashboard/data", { cache: "no-store" });
+      if (res.status === 401) {
+        setAuthed(false);
+        setFailed(false);
+        return;
+      }
+      if (!res.ok || !res.headers.get("content-type")?.includes("json")) {
+        throw new Error(`неожиданный ответ ${res.status}`);
+      }
+      setData((await res.json()) as DashData);
+      setAuthed(true);
+      setFailed(false);
+    } catch {
+      setAuthed(true);
+      setFailed(true);
     }
-    setAuthed(true);
-    setData(await res.json());
   }, []);
 
   useEffect(() => {
@@ -143,6 +159,29 @@ export default function DashboardPage() {
               {t.dashboard.enter}
             </button>
           </motion.div>
+        </main>
+      </>
+    );
+  }
+
+  if (failed) {
+    return (
+      <>
+        <Nav />
+        <main className="grid min-h-dvh place-items-center bg-foam px-5">
+          <div className="card max-w-sm p-8 text-center">
+            <IconAlert className="mx-auto mb-3 h-8 w-8 text-warn" />
+            <h1 className="text-lg font-extrabold">{t.common.error}</h1>
+            <button
+              onClick={() => {
+                setFailed(false);
+                void load();
+              }}
+              className="btn btn-primary mt-5 px-6 py-3"
+            >
+              {t.common.retry}
+            </button>
+          </div>
         </main>
       </>
     );
