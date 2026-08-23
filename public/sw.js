@@ -1,0 +1,107 @@
+/**
+ * Service worker Tasqyn.
+ *
+ * Задача одна: если человек уже открывал приложение, оно должно открыться
+ * и без сети — чтобы можно было составить сообщение и отдать его очереди.
+ * Свежесть данных при этом важнее кеша, поэтому API всегда идёт в сеть первым.
+ */
+
+const VERSION = "tasqyn-v1";
+const SHELL = `${VERSION}-shell`;
+const RUNTIME = `${VERSION}-runtime`;
+
+const SHELL_URLS = ["/", "/map", "/report", "/alerts", "/icon.svg", "/manifest.webmanifest"];
+
+self.addEventListener("install", (event) => {
+  event.waitUntil(
+    caches
+      .open(SHELL)
+      // Одна недоступная страница не должна ронять всю установку.
+      .then((cache) => Promise.allSettled(SHELL_URLS.map((u) => cache.add(u))))
+      .then(() => self.skipWaiting()),
+  );
+});
+
+self.addEventListener("activate", (event) => {
+  event.waitUntil(
+    caches
+      .keys()
+      .then((keys) =>
+        Promise.all(
+          keys
+            .filter((k) => !k.startsWith(VERSION))
+            .map((k) => caches.delete(k)),
+        ),
+      )
+      .then(() => self.clients.claim()),
+  );
+});
+
+self.addEventListener("fetch", (event) => {
+  const { request } = event;
+  if (request.method !== "GET") return;
+
+  const url = new URL(request.url);
+
+  // API: только сеть. Устаревшая карта паводка опаснее пустого экрана.
+  if (url.origin === self.location.origin && url.pathname.startsWith("/api/")) {
+    // Фото неизменяемы — их кешируем.
+    if (url.pathname.startsWith("/api/photo/")) {
+      event.respondWith(cacheFirst(request, RUNTIME));
+    }
+    return;
+  }
+
+  // Навигация: сеть, при отказе — сохранённая оболочка.
+  if (request.mode === "navigate") {
+    event.respondWith(
+      fetch(request)
+        .then((res) => {
+          const copy = res.clone();
+          caches.open(SHELL).then((c) => c.put(request, copy));
+          return res;
+        })
+        .catch(() =>
+          caches
+            .match(request)
+            .then((hit) => hit || caches.match("/map") || caches.match("/")),
+        ),
+    );
+    return;
+  }
+
+  // Статика приложения и тайлы карты.
+  if (
+    url.origin === self.location.origin ||
+    url.hostname.endsWith("openfreemap.org")
+  ) {
+    event.respondWith(staleWhileRevalidate(request, RUNTIME));
+  }
+});
+
+function cacheFirst(request, cacheName) {
+  return caches.match(request).then(
+    (hit) =>
+      hit ||
+      fetch(request).then((res) => {
+        const copy = res.clone();
+        caches.open(cacheName).then((c) => c.put(request, copy));
+        return res;
+      }),
+  );
+}
+
+function staleWhileRevalidate(request, cacheName) {
+  return caches.match(request).then((hit) => {
+    const network = fetch(request)
+      .then((res) => {
+        if (res.ok || res.type === "opaque") {
+          const copy = res.clone();
+          caches.open(cacheName).then((c) => c.put(request, copy));
+        }
+        return res;
+      })
+      .catch(() => hit);
+    return hit || network;
+  });
+}

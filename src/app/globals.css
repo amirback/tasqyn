@@ -1,0 +1,446 @@
+@import "tailwindcss";
+
+/* ───────────────────────────────────────────────────────────
+   Tasqyn — «вода и бумага»: белый лист, по которому идёт вода.
+   Один акцентный цвет, всё остальное — воздух.
+   ─────────────────────────────────────────────────────────── */
+
+@theme {
+  --color-water-50: #f0f9ff;
+  --color-water-100: #e0f2fe;
+  --color-water-200: #bae6fd;
+  --color-water-300: #7dd3fc;
+  --color-water-400: #38bdf8;
+  --color-water-500: #0ea5e9;
+  --color-water-600: #0284c7;
+  --color-water-700: #0369a1;
+  --color-water-800: #075985;
+  --color-water-900: #0c4a6e;
+  --color-water-950: #082f49;
+
+  --color-ink: #071a2b;
+  --color-ink-soft: #3f5c74;
+  --color-foam: #f6fbff;
+
+  --color-alert: #ef4444;
+  --color-warn: #f59e0b;
+  --color-safe: #10b981;
+
+  --font-sans: var(--font-manrope), ui-sans-serif, system-ui, -apple-system,
+    "Segoe UI", Roboto, sans-serif;
+
+  --radius-4xl: 2rem;
+  --radius-5xl: 2.75rem;
+
+  --animate-float: float 7s ease-in-out infinite;
+  --animate-float-slow: float 11s ease-in-out infinite;
+  --animate-drift: drift 22s ease-in-out infinite;
+  --animate-wave: wave 9s linear infinite;
+  --animate-shimmer: shimmer 2.4s linear infinite;
+  --animate-ring: ring 2.6s cubic-bezier(0.22, 1, 0.36, 1) infinite;
+  --animate-marquee: marquee 38s linear infinite;
+  --animate-bob: bob 2.6s ease-in-out infinite;
+}
+
+@keyframes float {
+  0%,
+  100% {
+    transform: translate3d(0, 0, 0) rotate(0deg);
+  }
+  50% {
+    transform: translate3d(0, -18px, 0) rotate(2deg);
+  }
+}
+
+@keyframes bob {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-6px);
+  }
+}
+
+@keyframes drift {
+  0%,
+  100% {
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+  33% {
+    transform: translate3d(4%, -6%, 0) scale(1.08);
+  }
+  66% {
+    transform: translate3d(-5%, 4%, 0) scale(0.95);
+  }
+}
+
+@keyframes wave {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
+}
+
+@keyframes shimmer {
+  from {
+    background-position: -200% 0;
+  }
+  to {
+    background-position: 200% 0;
+  }
+}
+
+@keyframes ring {
+  0% {
+    transform: scale(0.7);
+    opacity: 0.85;
+  }
+  100% {
+    transform: scale(2.6);
+    opacity: 0;
+  }
+}
+
+@keyframes marquee {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
+}
+
+/* ── База ─────────────────────────────────────────────────── */
+
+* {
+  -webkit-tap-highlight-color: transparent;
+}
+
+html {
+  scroll-behavior: smooth;
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  background: var(--color-foam);
+  color: var(--color-ink);
+  font-family: var(--font-sans);
+  overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+/* Lenis сам управляет прокруткой — родной smooth только мешает */
+html.lenis {
+  scroll-behavior: auto;
+}
+.lenis.lenis-smooth {
+  scroll-behavior: auto !important;
+}
+
+::selection {
+  background: var(--color-water-200);
+  color: var(--color-water-950);
+}
+
+:focus-visible {
+  outline: 2px solid var(--color-water-500);
+  outline-offset: 3px;
+  border-radius: 6px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* ── Типографика ──────────────────────────────────────────── */
+
+.display {
+  font-weight: 800;
+  letter-spacing: -0.045em;
+  line-height: 0.95;
+  text-wrap: balance;
+}
+
+.headline {
+  font-weight: 800;
+  letter-spacing: -0.035em;
+  line-height: 1.03;
+  text-wrap: balance;
+}
+
+.kicker {
+  font-weight: 700;
+  font-size: 0.75rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--color-water-600);
+}
+
+.lead {
+  color: var(--color-ink-soft);
+  line-height: 1.6;
+  text-wrap: pretty;
+}
+
+/* Заливка текста градиентом воды */
+.text-water {
+  background: linear-gradient(
+    100deg,
+    var(--color-water-600) 0%,
+    var(--color-water-400) 42%,
+    var(--color-water-700) 100%
+  );
+  background-size: 200% 100%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  animation: shimmer 7s linear infinite;
+}
+
+/* ── Поверхности ──────────────────────────────────────────── */
+
+.glass {
+  background: rgba(255, 255, 255, 0.72);
+  backdrop-filter: blur(20px) saturate(1.6);
+  -webkit-backdrop-filter: blur(20px) saturate(1.6);
+  border: 1px solid rgba(255, 255, 255, 0.9);
+  box-shadow:
+    0 1px 2px rgba(7, 26, 43, 0.04),
+    0 12px 40px -12px rgba(3, 105, 161, 0.18);
+}
+
+.card {
+  background: #fff;
+  border: 1px solid var(--color-water-100);
+  border-radius: var(--radius-4xl);
+  box-shadow:
+    0 1px 2px rgba(7, 26, 43, 0.04),
+    0 18px 50px -24px rgba(3, 105, 161, 0.28);
+  transition:
+    transform 0.5s cubic-bezier(0.22, 1, 0.36, 1),
+    box-shadow 0.5s cubic-bezier(0.22, 1, 0.36, 1),
+    border-color 0.4s ease;
+}
+
+.card-hover:hover {
+  transform: translateY(-6px);
+  border-color: var(--color-water-300);
+  box-shadow:
+    0 1px 2px rgba(7, 26, 43, 0.04),
+    0 32px 70px -30px rgba(3, 105, 161, 0.42);
+}
+
+/* Мягкие пятна света на фоне — «толща воды» */
+.blob {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(72px);
+  opacity: 0.55;
+  pointer-events: none;
+  will-change: transform;
+}
+
+/* Тонкая сетка, чтобы белое не выглядело пустым */
+.grid-paper {
+  background-image:
+    linear-gradient(rgba(14, 165, 233, 0.055) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(14, 165, 233, 0.055) 1px, transparent 1px);
+  background-size: 56px 56px;
+  mask-image: radial-gradient(ellipse 80% 60% at 50% 40%, #000 30%, transparent 78%);
+  -webkit-mask-image: radial-gradient(
+    ellipse 80% 60% at 50% 40%,
+    #000 30%,
+    transparent 78%
+  );
+}
+
+/* ── Кнопки ───────────────────────────────────────────────── */
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.6rem;
+  border-radius: 9999px;
+  font-weight: 700;
+  letter-spacing: -0.012em;
+  white-space: nowrap;
+  transition:
+    transform 0.35s cubic-bezier(0.22, 1, 0.36, 1),
+    box-shadow 0.35s cubic-bezier(0.22, 1, 0.36, 1),
+    background-color 0.25s ease,
+    color 0.25s ease;
+  cursor: pointer;
+  user-select: none;
+}
+.btn:active {
+  transform: scale(0.97);
+}
+.btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.btn-primary {
+  background: linear-gradient(
+    180deg,
+    var(--color-water-500),
+    var(--color-water-600)
+  );
+  color: #fff;
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.35) inset,
+    0 10px 30px -10px rgba(2, 132, 199, 0.75);
+}
+.btn-primary:hover:not(:disabled) {
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.35) inset,
+    0 18px 42px -12px rgba(2, 132, 199, 0.85);
+  transform: translateY(-2px);
+}
+
+.btn-ghost {
+  background: rgba(255, 255, 255, 0.8);
+  color: var(--color-water-800);
+  border: 1px solid var(--color-water-200);
+}
+.btn-ghost:hover:not(:disabled) {
+  background: #fff;
+  border-color: var(--color-water-400);
+  transform: translateY(-2px);
+}
+
+.btn-danger {
+  background: var(--color-alert);
+  color: #fff;
+  box-shadow: 0 10px 30px -12px rgba(239, 68, 68, 0.8);
+}
+
+/* ── Карта ────────────────────────────────────────────────── */
+
+.maplibregl-ctrl-attrib {
+  font-size: 10px !important;
+  background: rgba(255, 255, 255, 0.78) !important;
+  border-radius: 8px 0 0 0 !important;
+}
+.maplibregl-ctrl-attrib a {
+  color: var(--color-ink-soft) !important;
+}
+.maplibregl-canvas {
+  outline: none;
+}
+.maplibregl-popup-content {
+  padding: 0 !important;
+  border-radius: 20px !important;
+  box-shadow: 0 24px 60px -20px rgba(7, 26, 43, 0.4) !important;
+  overflow: hidden;
+}
+.maplibregl-popup-close-button {
+  font-size: 20px !important;
+  padding: 6px 10px !important;
+  color: var(--color-ink-soft) !important;
+}
+
+/* Метка на карте */
+.pin {
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 50% 50% 50% 12%;
+  transform: rotate(45deg);
+  border: 2.5px solid #fff;
+  box-shadow: 0 8px 20px -6px rgba(7, 26, 43, 0.55);
+  cursor: pointer;
+  transition: transform 0.28s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.pin > span {
+  transform: rotate(-45deg);
+  font-size: 18px;
+  line-height: 1;
+}
+.pin-wrap:hover .pin {
+  transform: rotate(45deg) scale(1.16);
+}
+.pin-wrap {
+  position: relative;
+  display: grid;
+  place-items: center;
+}
+.pin-ring {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  border: 2px solid currentColor;
+  animation: var(--animate-ring);
+  pointer-events: none;
+}
+
+/* ── Прочее ───────────────────────────────────────────────── */
+
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  scrollbar-width: none;
+}
+
+.marquee-track {
+  display: flex;
+  width: max-content;
+  animation: var(--animate-marquee);
+}
+.marquee-pause:hover .marquee-track {
+  animation-play-state: paused;
+}
+
+.skeleton {
+  background: linear-gradient(
+    90deg,
+    var(--color-water-50) 25%,
+    var(--color-water-100) 37%,
+    var(--color-water-50) 63%
+  );
+  background-size: 400% 100%;
+  animation: shimmer 1.6s linear infinite;
+}
+
+input[type="range"].water-range {
+  -webkit-appearance: none;
+  appearance: none;
+  height: 6px;
+  border-radius: 999px;
+  background: var(--color-water-100);
+  outline: none;
+}
+input[type="range"].water-range::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: #fff;
+  border: 3px solid var(--color-water-500);
+  box-shadow: 0 4px 14px -4px rgba(2, 132, 199, 0.7);
+  cursor: pointer;
+}
+input[type="range"].water-range::-moz-range-thumb {
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: #fff;
+  border: 3px solid var(--color-water-500);
+  cursor: pointer;
+}
