@@ -4,6 +4,7 @@ import { useCallback, useEffect, useState } from "react";
 import { motion } from "motion/react";
 import { useI18n, useTimeAgo } from "@/i18n";
 import { FloodMap } from "@/components/FloodMap";
+import { ForecastPanel } from "@/components/ForecastPanel";
 import {
   IconAlert,
   IconChart,
@@ -294,6 +295,8 @@ export default function DashboardPage() {
                   </div>
                 )}
               </div>
+
+              <ForecastPanel hydro={hydro} />
 
               {/* Очаги */}
               <div className="card p-6">

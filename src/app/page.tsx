@@ -18,6 +18,7 @@ import {
   Tilt,
 } from "@/components/motion";
 import { FloatCard, WaterBlobs, WaveDivider } from "@/components/Water";
+import { ForecastPanel } from "@/components/ForecastPanel";
 import {
   IconAlert,
   IconArrowDown,
@@ -229,7 +230,12 @@ export default function Home() {
             <Reveal delay={0.15} className="mt-6">
               <div className="card grid gap-6 p-7 sm:p-9 lg:grid-cols-[1.1fr_1fr]">
                 <div>
-                  <div className="kicker">{t.risk.title}</div>
+                  <div className="flex flex-wrap items-center gap-2">
+                    <span className="kicker">{t.risk.title}</span>
+                    <span className="rounded-full bg-amber-50 px-2.5 py-0.5 text-[10px] font-bold text-amber-700">
+                      {t.risk.notOfficial}
+                    </span>
+                  </div>
                   <div className="mt-1 flex items-center gap-2.5">
                     <span
                       className="h-3 w-3 rounded-full"
@@ -268,6 +274,7 @@ export default function Home() {
                       </li>
                     ))}
                   </ul>
+                  <p className="lead mt-4 text-[11px]">{t.risk.source}</p>
                 </div>
 
                 <div className="rounded-3xl bg-gradient-to-br from-water-50 to-white p-6 ring-1 ring-water-100">
@@ -315,6 +322,10 @@ export default function Home() {
                   </div>
                 </div>
               </div>
+            </Reveal>
+
+            <Reveal delay={0.18} className="mt-6">
+              <ForecastPanel hydro={hydro ?? null} />
             </Reveal>
 
             <Reveal delay={0.2} className="mt-8 text-center">

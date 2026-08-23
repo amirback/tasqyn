@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { AnimatePresence, motion } from "motion/react";
 import { useI18n, useTimeAgo } from "@/i18n";
 import { useLive, type Period } from "@/hooks/useLive";
@@ -16,6 +16,7 @@ import {
   IconTarget,
 } from "@/components/icons";
 import { ReportSheet } from "@/components/ReportSheet";
+import { ForecastPanel } from "@/components/ForecastPanel";
 import { MobileTabs, Nav } from "@/components/Nav";
 import { URALSK } from "@/lib/geo";
 import { RISK_COLOR } from "@/lib/risk";
@@ -45,6 +46,26 @@ export default function MapPage() {
   const [center, setCenter] = useState<{ lat: number; lng: number } | undefined>();
   const [zoom, setZoom] = useState<number | undefined>();
   const [panelOpen, setPanelOpen] = useState(false);
+  // Подсказку показываем один раз: человек, открывший карту впервые,
+  // не должен гадать, где вообще ставится метка.
+  const [showHowTo, setShowHowTo] = useState(false);
+
+  useEffect(() => {
+    try {
+      if (!localStorage.getItem("tasqyn.howto")) setShowHowTo(true);
+    } catch {
+      /* приватный режим — просто не показываем */
+    }
+  }, []);
+
+  const dismissHowTo = () => {
+    setShowHowTo(false);
+    try {
+      localStorage.setItem("tasqyn.howto", "1");
+    } catch {
+      /* неважно */
+    }
+  };
 
   const { position, locate, loading: locating, denied } = useGeolocation();
   const { data, loading, reload } = useLive({
@@ -195,8 +216,13 @@ export default function MapPage() {
               exit={{ opacity: 0, y: -16 }}
               className="absolute inset-x-0 top-32 z-[70] px-3 sm:top-36 sm:px-5"
             >
-              <div className="glass mx-auto max-w-md rounded-3xl p-5">
-                <div className="kicker mb-2">{t.risk.why}</div>
+              <div className="glass mx-auto max-h-[62vh] max-w-md overflow-y-auto rounded-3xl p-5">
+                <div className="mb-2 flex flex-wrap items-center gap-2">
+                  <span className="kicker">{t.risk.why}</span>
+                  <span className="rounded-full bg-amber-50 px-2.5 py-0.5 text-[10px] font-bold text-amber-700">
+                    {t.risk.notOfficial}
+                  </span>
+                </div>
                 <div className="mb-3 h-2 w-full overflow-hidden rounded-full bg-water-50">
                   <motion.div
                     className="h-full rounded-full"
@@ -238,6 +264,49 @@ export default function MapPage() {
                     )}
                   </div>
                 )}
+                <p className="lead mt-3 text-[11px]">{t.risk.source}</p>
+                <div className="mt-4">
+                  <ForecastPanel hydro={data?.hydro ?? null} />
+                </div>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        {/* Как поставить метку — один раз при первом заходе */}
+        <AnimatePresence>
+          {showHowTo && (
+            <motion.div
+              initial={{ opacity: 0, y: 16 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: 16 }}
+              className="pointer-events-none absolute inset-x-0 bottom-40 z-[65] px-3 sm:px-5 md:bottom-20"
+            >
+              <div className="glass pointer-events-auto mx-auto max-w-sm rounded-3xl p-4">
+                <div className="kicker !text-[0.62rem]">
+                  {t.map.howTo.title}
+                </div>
+                <ol className="mt-2 space-y-1.5">
+                  {[t.map.howTo.step1, t.map.howTo.step2, t.map.howTo.step3].map(
+                    (step, i) => (
+                      <li
+                        key={step}
+                        className="flex gap-2.5 text-xs font-semibold text-ink-soft"
+                      >
+                        <span className="grid h-5 w-5 shrink-0 place-items-center rounded-full bg-water-100 text-[10px] font-extrabold text-water-700">
+                          {i + 1}
+                        </span>
+                        {step}
+                      </li>
+                    ),
+                  )}
+                </ol>
+                <button
+                  onClick={dismissHowTo}
+                  className="btn btn-primary mt-3 w-full py-2 text-xs"
+                >
+                  {t.map.howTo.got}
+                </button>
               </div>
             </motion.div>
           )}
@@ -328,40 +397,12 @@ export default function MapPage() {
           </button>
           <Link
             href="/report"
-            className="btn btn-primary grid h-14 w-14 place-items-center rounded-full text-2xl shadow-xl"
+            className="btn btn-primary h-14 rounded-full px-4 shadow-xl md:px-5"
             aria-label={t.map.addReport}
           >
             <IconDrop className="h-6 w-6" />
+            <span className="hidden text-sm md:inline">{t.map.addReport}</span>
           </Link>
-        </div>
-
-        {/* Легенда — только на широком экране */}
-        <div className="glass absolute bottom-6 left-5 z-[55] hidden rounded-3xl p-4 xl:block">
-          <div className="kicker mb-2.5 !text-[0.62rem]">{t.map.legendLevel}</div>
-          <ul className="space-y-1.5">
-            {([1, 2, 3, 4] as const).map((lvl) => (
-              <li key={lvl} className="flex items-center gap-2 text-xs font-semibold">
-                <span
-                  className="grid h-6 w-6 place-items-center rounded-full text-[11px]"
-                  style={{ background: `${LEVEL_COLOR[lvl]}33` }}
-                >
-                  <span aria-hidden>{LEVEL_EMOJI[lvl]}</span>
-                </span>
-                {t.report.levels[`l${lvl}` as "l1"].title}
-              </li>
-            ))}
-          </ul>
-          <div className="my-3 h-px bg-water-100" />
-          <ul className="space-y-1.5">
-            {(["road", "help", "safe"] as const).map((k) => (
-              <li key={k} className="flex items-center gap-2 text-xs font-semibold">
-                <span className="grid h-6 w-6 place-items-center rounded-full bg-water-50 text-[11px]">
-                  <span aria-hidden>{KIND_EMOJI[k]}</span>
-                </span>
-                {t.map.kinds[k]}
-              </li>
-            ))}
-          </ul>
         </div>
 
         {/* Пустое состояние */}
@@ -383,11 +424,13 @@ export default function MapPage() {
           </motion.div>
         )}
 
-        {/* Свежая лента слева на десктопе */}
-        {reports.length > 0 && (
-          /* Ниже верхней панели: на широком экране они шли внахлёст */
-          <div className="absolute top-40 left-5 z-[55] hidden w-72 xl:block">
-            <div className="glass max-h-[46vh] overflow-y-auto rounded-3xl p-3">
+        {/*
+          Лента и легенда живут в одной колонке: раньше они стояли двумя
+          абсолютными блоками и на невысоком экране наезжали друг на друга.
+        */}
+        <div className="pointer-events-none absolute top-40 bottom-24 left-5 z-[55] hidden w-72 flex-col gap-3 xl:flex">
+          {reports.length > 0 && (
+            <div className="glass pointer-events-auto min-h-0 flex-1 overflow-y-auto rounded-3xl p-3">
               <div className="kicker mb-2 px-2 !text-[0.62rem]">
                 {t.dashboard.feed}
               </div>
@@ -425,8 +468,44 @@ export default function MapPage() {
                 ))}
               </ul>
             </div>
+          )}
+
+          <div className="glass pointer-events-auto shrink-0 rounded-3xl p-4">
+            <div className="kicker mb-2.5 !text-[0.62rem]">
+              {t.map.legendLevel}
+            </div>
+            <ul className="space-y-1.5">
+              {([1, 2, 3, 4] as const).map((lvl) => (
+                <li
+                  key={lvl}
+                  className="flex items-center gap-2 text-xs font-semibold"
+                >
+                  <span
+                    className="grid h-6 w-6 place-items-center rounded-full text-[11px]"
+                    style={{ background: `${LEVEL_COLOR[lvl]}33` }}
+                  >
+                    <span aria-hidden>{LEVEL_EMOJI[lvl]}</span>
+                  </span>
+                  {t.report.levels[`l${lvl}` as "l1"].title}
+                </li>
+              ))}
+            </ul>
+            <div className="my-3 h-px bg-water-100" />
+            <ul className="space-y-1.5">
+              {(["road", "help", "safe"] as const).map((k) => (
+                <li
+                  key={k}
+                  className="flex items-center gap-2 text-xs font-semibold"
+                >
+                  <span className="grid h-6 w-6 place-items-center rounded-full bg-water-50 text-[11px]">
+                    <span aria-hidden>{KIND_EMOJI[k]}</span>
+                  </span>
+                  {t.map.kinds[k]}
+                </li>
+              ))}
+            </ul>
           </div>
-        )}
+        </div>
       </main>
 
       <ReportSheet

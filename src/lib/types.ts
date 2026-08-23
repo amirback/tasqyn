@@ -77,6 +77,42 @@ export interface HydroSnapshot {
   /** осадки за ближайшие 3 дня, мм */
   precip3d: number | null;
   days: HydroDay[];
+  outlook: Outlook | null;
+}
+
+/**
+ * Точка на Жайыке выше Уральска.
+ *
+ * Вода идёт к городу сверху, из Оренбургской области, поэтому подъём там —
+ * это то, что в Уральске увидят через несколько дней. Именно так весной
+ * 2024-го паводок и шёл: сначала верховья, потом ЗКО.
+ */
+export interface UpstreamPoint {
+  key: string;
+  /** примерно по руслу выше Уральска, км */
+  distanceKm: number;
+  discharge: number | null;
+  normal: number | null;
+  anomalyPct: number | null;
+  trend: HydroTrend;
+}
+
+/** Что модели ожидают в ближайшие две недели. Не официальный прогноз. */
+export interface Outlook {
+  /** максимум расхода в прогнозе на 14 дней */
+  peakDischarge: number | null;
+  peakDate: string | null;
+  /** насколько пик выше сегодняшнего значения, % */
+  peakChangePct: number | null;
+  precip3d: number | null;
+  precip7d: number | null;
+  /** свежий снег за 7 дней, см */
+  snow7d: number | null;
+  /** дней в ближайшую неделю, когда температура переходит через ноль */
+  thawDays: number;
+  upstream: UpstreamPoint[];
+  /** сколько внешних источников ответило: 0 — показывать нечего */
+  sources: number;
 }
 
 export interface RiskAssessment {

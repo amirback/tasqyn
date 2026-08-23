@@ -10,7 +10,7 @@ export const en: Dict = {
   lang: { label: "Language", ru: "Русский", kk: "Қазақша", en: "English" },
   brand: {
     name: "Tasqyn",
-    tagline: "Real data. Real time. Real protection.",
+    tagline: "The Uralsk flood on one map",
   },
   nav: {
     home: "Home",
@@ -50,10 +50,10 @@ export const en: Dict = {
   },
   landing: {
     badge: "Pilot — Uralsk, West Kazakhstan",
-    title: "Water moves faster",
-    titleAccent: "than the bulletin",
+    title: "Where the water is",
+    titleAccent: "right now",
     subtitle:
-      "Tasqyn is a flood map drawn by the residents of Uralsk themselves. One tap puts your street on the map for every neighbour and for the emergency service.",
+      "Residents of Uralsk mark where water is standing and which roads are cut. Alongside it: river discharge on the Zhayyk and the weather forecast.",
     ctaMap: "Open the map",
     ctaReport: "Report water",
     scroll: "Scroll down",
@@ -69,8 +69,8 @@ export const en: Dict = {
     ],
     live: {
       kicker: "Right now",
-      title: "The whole city on one screen",
-      lead: "These numbers are live — they move the moment somebody in Uralsk sends a report.",
+      title: "What is happening in the city",
+      lead: "The numbers change the moment somebody sends a report.",
       reports: "reports total",
       active: "active now",
       confirmed: "confirmed by neighbours",
@@ -81,12 +81,12 @@ export const en: Dict = {
     },
     problem: {
       kicker: "The problem",
-      title: "In Uralsk a flood is not a forecast — it's water in your yard",
-      lead: "In spring 2024 West Kazakhstan was among the hardest-hit regions of the country. The problem isn't missing data. It's the resolution of that data.",
+      title: "A river level at one point says nothing about your street",
+      lead: "In spring 2024 West Kazakhstan was among the hardest-hit regions of the country. Regional data existed, but it was far too coarse: one number for the whole city.",
       items: [
         {
           title: "A gauge is not your street",
-          text: "The hydromet service reports the river at a single point. But water reaches each district differently, and 40 cm decides everything.",
+          text: "The hydromet service measures the river at a gauge. Water reaches each district differently, and 40 cm changes everything.",
         },
         {
           title: "Bulletins come once a day",
@@ -104,8 +104,8 @@ export const en: Dict = {
     },
     how: {
       kicker: "How it works",
-      title: "Three screens. Ten seconds.",
-      lead: "We don't ask anyone to measure centimetres and fill in a form. That does not work in a panic.",
+      title: "A report takes under ten seconds",
+      lead: "Nobody is going to measure centimetres and fill in a questionnaire — least of all with water already in the yard.",
       steps: [
         {
           title: "What you see",
@@ -124,8 +124,8 @@ export const en: Dict = {
     },
     trust: {
       kicker: "Trust",
-      title: "One fake report kills the whole service",
-      lead: "That is why verification is built into the product on day one, not deferred.",
+      title: "Neighbours check every report",
+      lead: "Nobody uses a service with an invented marker sitting on it. So verification works from day one.",
       items: [
         {
           title: "Neighbours verify",
@@ -133,7 +133,7 @@ export const en: Dict = {
         },
         {
           title: "You can see where the number came from",
-          text: "The city risk level is assembled from plain components, each one shown to the user. No black box.",
+          text: "The alert level is assembled from simple parts, and all of them are written out on screen. You can see how the number was reached.",
         },
         {
           title: "Official data alongside, not instead",
@@ -143,8 +143,8 @@ export const en: Dict = {
     },
     data: {
       kicker: "Sources",
-      title: "Live data, not a mock-up",
-      lead: "Everything on this map comes from sources that are working right now — none of it is drawn by hand.",
+      title: "Where the numbers come from",
+      lead: "Everything shown next to the map comes from open sources and refreshes every day.",
       sources: [
         {
           title: "Zhayyk river discharge",
@@ -162,7 +162,7 @@ export const en: Dict = {
     },
     why: {
       kicker: "Why it works",
-      title: "The edge is resolution, not graphics",
+      title: "Why this beats a bulletin",
       items: [
         {
           title: "Speed",
@@ -170,7 +170,7 @@ export const en: Dict = {
         },
         {
           title: "Street-level precision",
-          text: "Not \"the level in the city\" but \"knee-deep at your junction\". Those are different data.",
+          text: "A marker sits on one junction, not on the city as a whole.",
         },
         {
           title: "Reach",
@@ -178,13 +178,13 @@ export const en: Dict = {
         },
         {
           title: "It buys time",
-          text: "Leave earlier, drive around the flooded road, lift your things in time. Here time is measured in property and lives.",
+          text: "Leave in time, drive around the closed stretch, lift your things higher.",
         },
       ],
     },
     audience: {
       kicker: "Who it's for",
-      title: "One map, three different users",
+      title: "Who uses it",
       items: [
         {
           title: "Residents",
@@ -228,8 +228,8 @@ export const en: Dict = {
       note: "Each phase rests on proven results from the last one. The next flood peak is spring 2027 — everything has to work before March.",
     },
     cta: {
-      title: "Open the map of your own street",
-      text: "No sign-up. Works from a phone. One report from you can stop somebody's car in front of a flooded road.",
+      title: "See what is on your own street",
+      text: "No sign-up, nothing to install. One marker from you can stop somebody's car in front of a closed road.",
       button: "View the map",
       secondary: "Report water",
     },
@@ -269,6 +269,13 @@ export const en: Dict = {
     addReport: "Report",
     recenter: "Back to city centre",
     outsideHint: "The pilot covers Uralsk and its surroundings",
+    howTo: {
+      title: "How to drop a marker",
+      step1: "Tap the blue Report button",
+      step2: "Pick what is happening and how deep it is",
+      step3: "GPS fills in the place — you can nudge the map by hand",
+      got: "Got it",
+    },
     noWebgl: "The map couldn't open on this device",
     noWebglHint:
       "This browser doesn't support map graphics. Reports are shown as a list — everything else works.",
@@ -403,8 +410,35 @@ export const en: Dict = {
     hotspotsHint: "Blocks with the highest report density in the last 24 hours",
     noData: "No data yet",
   },
+  forecast: {
+    kicker: "Outlook",
+    title: "What is expected over the next two weeks",
+    lead: "This is a model calculation from open data. It gets things wrong and does not replace an official warning.",
+    notExact: "Approximate data",
+    disclaimer:
+      "River discharge is computed by the global Copernicus GloFAS model, weather by Open-Meteo. Both give an approximate picture for the river and the region, not the water level at your house. Official decisions are made by the emergency service; in danger call 112.",
+    peakRise: "The model expects a rise to {q} m³/s — {pct}% above today",
+    peakFall: "The model expects a fall to {q} m³/s",
+    peakStable: "The model expects no notable change in discharge",
+    peakOn: "expected peak — {date}",
+    upstream: "Upstream",
+    upstreamHint:
+      "The Zhayyk reaches Uralsk from upstream, out of Orenburg oblast. A rise up there shows up in the city a few days later — that is exactly how the water travelled in spring 2024.",
+    points: { orenburg: "Orenburg", ilek: "Ilek", rubezhka: "Rubyozhka" },
+    km: "{n} km upstream",
+    rain7: "Rainfall over 7 days",
+    snow7: "Fresh snow over 7 days",
+    thaw: "Days crossing 0 °C",
+    thawHint: "Above zero by day, below by night — snow melts and the water reaches the river",
+    offSeason: "Flood season is not running now: in Uralsk the peak falls in April.",
+    noData: "Outlook temporarily unavailable",
+    updated: "Updated",
+  },
   risk: {
     title: "Alert level",
+    notOfficial: "Not an official warning",
+    source:
+      "A Tasqyn estimate from open data and resident reports. Official warnings come from the emergency service.",
     score: "{n} out of 100",
     why: "What the score is made of",
     levels: {

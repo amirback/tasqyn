@@ -20,7 +20,14 @@ function connect(): Client {
       authToken: process.env.TURSO_AUTH_TOKEN,
     });
   }
-  const dir = path.join(process.cwd(), "data");
+  /**
+   * На Vercel файловая система только для чтения, кроме /tmp. Пишем туда,
+   * чтобы сервис не падал, но данные там живут лишь до перезапуска функции:
+   * для боевого пилота обязательно задать TURSO_DATABASE_URL.
+   */
+  const dir = process.env.VERCEL
+    ? "/tmp/tasqyn"
+    : path.join(process.cwd(), "data");
   fs.mkdirSync(dir, { recursive: true });
   return createClient({ url: `file:${path.join(dir, "tasqyn.db")}` });
 }
