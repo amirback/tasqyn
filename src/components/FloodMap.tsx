@@ -3,6 +3,7 @@
 import maplibregl, { type Map as MLMap, type Marker } from "maplibre-gl";
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import { useI18n } from "@/i18n";
+import { IconMap, IconPin } from "./icons";
 import { URALSK } from "@/lib/geo";
 import {
   KIND_COLOR,
@@ -435,9 +436,7 @@ export function FloodMap({
       >
         {fallback ?? (
           <div className="max-w-xs text-center">
-            <div className="mb-2 text-4xl" aria-hidden>
-              🗺️
-            </div>
+            <IconMap className="mx-auto mb-2 h-8 w-8 text-water-500" />
             <div className="text-sm font-extrabold">{t.map.noWebgl}</div>
             <p className="lead mt-1 text-xs">{t.map.noWebglHint}</p>
           </div>
@@ -452,7 +451,7 @@ export function FloodMap({
       {pickMode && (
         <div className="pointer-events-none absolute inset-0 grid place-items-center">
           <div className="-translate-y-4">
-            <div className="animate-bob text-4xl drop-shadow-lg">📍</div>
+            <IconPin className="animate-bob h-10 w-10 text-water-600 drop-shadow-lg" />
             <div className="mx-auto h-2 w-2 rounded-full bg-water-600/40 blur-[1px]" />
           </div>
         </div>

@@ -7,6 +7,17 @@ import { useI18n } from "@/i18n";
 import { useLive } from "@/hooks/useLive";
 import { useGeolocation } from "@/hooks/useGeolocation";
 import { FloodMap } from "@/components/FloodMap";
+import {
+  IconAlert,
+  IconBell,
+  IconCheck,
+  IconHome,
+  IconPin,
+  IconPlus,
+  IconSearch,
+  IconTarget,
+  IconTrash,
+} from "@/components/icons";
 import { MobileTabs, Nav } from "@/components/Nav";
 import { distanceM, formatDistance, geocode, insidePilot, URALSK } from "@/lib/geo";
 import {
@@ -154,7 +165,7 @@ export default function AlertsPage() {
         <div className="mx-auto max-w-3xl px-4">
           <header className="mb-6">
             <h1 className="headline text-3xl sm:text-4xl">
-              🔔 {t.alerts.title}
+              {t.alerts.title}
             </h1>
             <p className="lead mt-2 max-w-xl text-sm">{t.alerts.subtitle}</p>
           </header>
@@ -162,9 +173,11 @@ export default function AlertsPage() {
           {/* Уведомления */}
           <div className="card mb-4 flex flex-wrap items-center justify-between gap-3 p-5">
             <div className="flex items-center gap-3">
-              <span className="text-2xl" aria-hidden>
-                {permission === "granted" ? "🔔" : "🔕"}
-              </span>
+              <IconBell
+                className={`h-6 w-6 ${
+                  permission === "granted" ? "text-water-600" : "text-ink-soft/50"
+                }`}
+              />
               <div>
                 <div className="text-sm font-extrabold">
                   {t.alerts.notifications}
@@ -206,16 +219,15 @@ export default function AlertsPage() {
           {/* Список адресов */}
           {places.length === 0 && !adding ? (
             <div className="card p-10 text-center">
-              <div className="mb-3 text-5xl" aria-hidden>
-                🏠
-              </div>
+              <IconHome className="mx-auto mb-3 h-9 w-9 text-water-500" />
               <h2 className="text-lg font-extrabold">{t.alerts.empty}</h2>
               <p className="lead mt-2 text-sm">{t.alerts.emptyHint}</p>
               <button
                 onClick={() => setAdding(true)}
                 className="btn btn-primary mt-5 px-6 py-3"
               >
-                ➕ {t.alerts.addTitle}
+                <IconPlus className="h-4 w-4" />
+                {t.alerts.addTitle}
               </button>
             </div>
           ) : (
@@ -246,7 +258,7 @@ export default function AlertsPage() {
                             {p.label}
                           </div>
                           <div className="text-[11px] font-semibold text-ink-soft">
-                            📏 {formatDistance(p.radiusM, locale)} ·{" "}
+                            {formatDistance(p.radiusM, locale)} ·{" "}
                             {p.lat.toFixed(4)}, {p.lng.toFixed(4)}
                           </div>
 
@@ -259,10 +271,14 @@ export default function AlertsPage() {
                           >
                             {found.length ? (
                               <>
-                                ⚠️ {fmt(t.alerts.nearby, { n: found.length })}
+                                <IconAlert className="h-3.5 w-3.5" />
+                                {fmt(t.alerts.nearby, { n: found.length })}
                               </>
                             ) : (
-                              <>✅ {t.alerts.quiet}</>
+                              <>
+                                <IconCheck className="h-3.5 w-3.5" />
+                                {t.alerts.quiet}
+                              </>
                             )}
                           </div>
 
@@ -297,7 +313,7 @@ export default function AlertsPage() {
                           className="shrink-0 rounded-full p-2 text-ink-soft transition-colors hover:bg-red-50 hover:text-alert"
                           aria-label={t.alerts.remove}
                         >
-                          🗑️
+                          <IconTrash className="h-4 w-4" />
                         </button>
                       </div>
                     </motion.div>
@@ -310,7 +326,8 @@ export default function AlertsPage() {
                   onClick={() => setAdding(true)}
                   className="btn btn-ghost w-full py-4 text-sm"
                 >
-                  ➕ {t.alerts.addTitle}
+                  <IconPlus className="h-4 w-4" />
+                  {t.alerts.addTitle}
                 </button>
               )}
             </div>
@@ -375,9 +392,11 @@ export default function AlertsPage() {
                       placeholder={t.alerts.searchPlaceholder}
                       className="w-full rounded-2xl border border-water-100 bg-water-50/50 px-4 py-3 pr-10 text-sm outline-none focus:border-water-400 focus:bg-white"
                     />
-                    <span className="absolute top-1/2 right-3 -translate-y-1/2 text-sm">
-                      {searching ? "⏳" : "🔍"}
-                    </span>
+                    <IconSearch
+                      className={`absolute top-1/2 right-3 h-4 w-4 -translate-y-1/2 text-ink-soft ${
+                        searching ? "animate-pulse" : ""
+                      }`}
+                    />
                   </div>
                   {results.length > 0 && (
                     <ul className="mt-2 space-y-1 rounded-2xl border border-water-100 p-1">
@@ -390,9 +409,10 @@ export default function AlertsPage() {
                               setResults([]);
                               setQuery(r.label);
                             }}
-                            className="w-full rounded-xl px-3 py-2 text-left text-xs font-semibold hover:bg-water-50"
+                            className="flex w-full items-center gap-2 rounded-xl px-3 py-2 text-left text-xs font-semibold hover:bg-water-50"
                           >
-                            📍 {r.label}
+                            <IconPin className="h-3.5 w-3.5 shrink-0 text-water-500" />
+                            {r.label}
                           </button>
                         </li>
                       ))}
@@ -410,7 +430,10 @@ export default function AlertsPage() {
                   }}
                   className="btn btn-ghost w-full py-3 text-sm"
                 >
-                  {locating ? "⏳" : "🎯"} {t.alerts.useLocation}
+                  <IconTarget
+                    className={`h-4 w-4 ${locating ? "animate-pulse" : ""}`}
+                  />
+                  {t.alerts.useLocation}
                 </button>
 
                 <div className="overflow-hidden rounded-2xl border border-water-100">
@@ -455,7 +478,7 @@ export default function AlertsPage() {
 
                 {!insidePilot(point.lat, point.lng) && (
                   <div className="rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-xs font-semibold text-amber-800">
-                    ⚠️ {t.report.place.outside}
+                    {t.report.place.outside}
                   </div>
                 )}
 
@@ -464,7 +487,8 @@ export default function AlertsPage() {
                   disabled={!insidePilot(point.lat, point.lng)}
                   className="btn btn-primary w-full py-4 text-base"
                 >
-                  ➕ {t.alerts.add}
+                  <IconPlus className="h-4 w-4" />
+                  {t.alerts.add}
                 </button>
               </motion.div>
             )}

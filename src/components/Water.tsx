@@ -101,17 +101,18 @@ export function WaveDivider({
   );
 }
 
-/** Плавающая эмодзи-карточка для героя. */
+/** Плавающая карточка с живой цифрой для героя. */
 export function FloatCard({
-  emoji,
   label,
   value,
+  dotColor,
   className = "",
   delay = 0,
 }: {
-  emoji: string;
   label: string;
   value?: string;
+  /** Цветная точка — когда значение само по себе статус, а не число. */
+  dotColor?: string;
   className?: string;
   delay?: number;
 }) {
@@ -123,16 +124,21 @@ export function FloatCard({
       className={`absolute ${className}`}
     >
       <div className="animate-float">
-        <div className="glass flex items-center gap-3 rounded-3xl px-4 py-3">
-          <span className="text-2xl leading-none sm:text-3xl" aria-hidden>
-            {emoji}
-          </span>
-          <div className="text-left">
+        <div className="glass flex items-center gap-3 rounded-3xl px-4 py-3 text-left">
+          <span
+            className="h-8 w-1 shrink-0 rounded-full"
+            style={{ background: dotColor ?? "var(--color-water-400)" }}
+            aria-hidden
+          />
+          <div>
             <div className="text-[10px] font-bold tracking-wide text-ink-soft uppercase">
               {label}
             </div>
             {value && (
-              <div className="text-sm font-extrabold text-ink sm:text-base">
+              <div
+                className="text-sm font-extrabold sm:text-base"
+                style={{ color: dotColor }}
+              >
                 {value}
               </div>
             )}

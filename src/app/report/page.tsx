@@ -7,6 +7,15 @@ import { AnimatePresence, motion } from "motion/react";
 import { useI18n } from "@/i18n";
 import { useGeolocation } from "@/hooks/useGeolocation";
 import { FloodMap } from "@/components/FloodMap";
+import {
+  IconArrowLeft,
+  IconArrowRight,
+  IconCamera,
+  IconCheck,
+  IconEdit,
+  IconPin,
+  IconTarget,
+} from "@/components/icons";
 import { MobileTabs, Nav } from "@/components/Nav";
 import { submitReport } from "@/lib/api";
 import { compressImage } from "@/lib/image";
@@ -275,7 +284,8 @@ export default function ReportPage() {
                   onClick={() => setStep("kind")}
                   className="btn btn-ghost w-full py-3 text-sm"
                 >
-                  ← {t.common.back}
+                  <IconArrowLeft className="h-4 w-4" />
+                  {t.common.back}
                 </button>
               </motion.section>
             )}
@@ -305,9 +315,7 @@ export default function ReportPage() {
                   />
                   <div className="border-t border-water-100 p-4">
                     <div className="flex items-start gap-2">
-                      <span className="text-lg" aria-hidden>
-                        📍
-                      </span>
+                      <IconPin className="mt-0.5 h-4 w-4 shrink-0 text-water-500" />
                       <div className="min-w-0 flex-1">
                         <div className="text-sm font-bold">
                           {addressBusy ? (
@@ -334,8 +342,13 @@ export default function ReportPage() {
                           }
                         }}
                         className="btn btn-ghost shrink-0 px-3 py-2 text-xs"
+                        aria-label={t.report.place.gps}
                       >
-                        {locating ? "…" : denied ? "🚫" : "🎯"}
+                        <IconTarget
+                          className={`h-4 w-4 ${locating ? "animate-pulse" : ""} ${
+                            denied ? "opacity-40" : ""
+                          }`}
+                        />
                       </button>
                     </div>
                     <p className="lead mt-2 text-[11px]">
@@ -346,7 +359,7 @@ export default function ReportPage() {
 
                 {outside && (
                   <div className="rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm font-semibold text-amber-800">
-                    ⚠️ {t.report.place.outside}
+                    {t.report.place.outside}
                   </div>
                 )}
 
@@ -355,14 +368,16 @@ export default function ReportPage() {
                     onClick={() => setStep(kind === "water" ? "level" : "kind")}
                     className="btn btn-ghost flex-1 py-3.5 text-sm"
                   >
-                    ← {t.common.back}
+                    <IconArrowLeft className="h-4 w-4" />
+                    {t.common.back}
                   </button>
                   <button
                     onClick={() => setStep("details")}
                     disabled={outside}
                     className="btn btn-primary flex-[2] py-3.5 text-sm"
                   >
-                    {t.common.next} →
+                    {t.common.next}
+                    <IconArrowRight className="h-4 w-4" />
                   </button>
                 </div>
               </motion.section>
@@ -391,22 +406,24 @@ export default function ReportPage() {
                         ? t.report.levels[`l${level}` as "l1"].title
                         : kind && t.report.kinds[kind].title}
                     </div>
-                    <div className="truncate text-[11px] font-semibold text-ink-soft">
-                      📍 {address ?? t.report.place.addressUnknown}
+                    <div className="flex items-center gap-1 truncate text-[11px] font-semibold text-ink-soft">
+                      <IconPin className="h-3 w-3 shrink-0" />
+                      {address ?? t.report.place.addressUnknown}
                     </div>
                   </div>
                   <button
                     onClick={() => setStep("kind")}
-                    className="shrink-0 text-xs font-bold text-water-600"
+                    className="shrink-0 text-water-600"
+                    aria-label={t.common.back}
                   >
-                    ✏️
+                    <IconEdit className="h-4 w-4" />
                   </button>
                 </div>
 
                 {/* Фото */}
                 <div className="card p-5">
                   <div className="mb-1 text-sm font-extrabold">
-                    📸 {t.report.details.photo}
+                    {t.report.details.photo}
                   </div>
                   <p className="lead mb-3 text-[11px]">
                     {t.report.details.photoHint}
@@ -449,9 +466,7 @@ export default function ReportPage() {
                       onClick={() => fileRef.current?.click()}
                       className="flex w-full flex-col items-center gap-2 rounded-2xl border-2 border-dashed border-water-200 py-8 transition-colors hover:border-water-400 hover:bg-water-50"
                     >
-                      <span className="text-4xl" aria-hidden>
-                        📷
-                      </span>
+                      <IconCamera className="h-7 w-7 text-water-500" />
                       <span className="text-sm font-bold text-water-700">
                         {t.report.details.addPhoto}
                       </span>
@@ -462,7 +477,7 @@ export default function ReportPage() {
                 {/* Комментарий */}
                 <div className="card p-5">
                   <div className="mb-1 text-sm font-extrabold">
-                    💬 {t.report.details.comment}
+                    {t.report.details.comment}
                   </div>
                   <textarea
                     value={comment}
@@ -483,7 +498,7 @@ export default function ReportPage() {
 
                 {errorText && (
                   <div className="rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-semibold text-red-700">
-                    ⚠️ {errorText}
+                    {errorText}
                   </div>
                 )}
 
@@ -491,15 +506,16 @@ export default function ReportPage() {
                   <button
                     onClick={() => setStep("place")}
                     className="btn btn-ghost flex-1 py-4 text-sm"
+                    aria-label={t.common.back}
                   >
-                    ←
+                    <IconArrowLeft className="h-4 w-4" />
                   </button>
                   <button
                     onClick={() => void send()}
                     disabled={busy}
                     className="btn btn-primary flex-[3] py-4 text-base"
                   >
-                    {busy ? t.report.submitting : `🚀 ${t.report.submit}`}
+                    {busy ? t.report.submitting : t.report.submit}
                   </button>
                 </div>
               </motion.section>
@@ -523,10 +539,9 @@ export default function ReportPage() {
                     damping: 14,
                     delay: 0.15,
                   }}
-                  className="mb-4 text-7xl"
-                  aria-hidden
+                  className="mx-auto mb-5 grid h-16 w-16 place-items-center rounded-full bg-water-500 text-white"
                 >
-                  {queued ? "📥" : "🎉"}
+                  <IconCheck className="h-8 w-8" />
                 </motion.div>
                 <h2 className="headline text-2xl sm:text-3xl">
                   {queued ? t.report.queuedTitle : t.report.successTitle}
@@ -540,10 +555,10 @@ export default function ReportPage() {
                     onClick={() => router.push("/map")}
                     className="btn btn-primary px-6 py-3.5"
                   >
-                    🗺️ {t.report.successMap}
+                    {t.report.successMap}
                   </button>
                   <button onClick={reset} className="btn btn-ghost px-6 py-3.5">
-                    ➕ {t.report.successAgain}
+                    {t.report.successAgain}
                   </button>
                 </div>
 
@@ -551,7 +566,7 @@ export default function ReportPage() {
                   href="/alerts"
                   className="mt-6 inline-block text-sm font-bold text-water-600 underline-offset-4 hover:underline"
                 >
-                  🔔 {t.alerts.title} →
+                  {t.alerts.title} →
                 </Link>
               </motion.section>
             )}

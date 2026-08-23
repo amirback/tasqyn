@@ -7,10 +7,18 @@ import { useI18n, useTimeAgo } from "@/i18n";
 import { useLive, type Period } from "@/hooks/useLive";
 import { useGeolocation } from "@/hooks/useGeolocation";
 import { FloodMap } from "@/components/FloodMap";
+import {
+  IconCity,
+  IconDrop,
+  IconMap,
+  IconLayers,
+  IconRefresh,
+  IconTarget,
+} from "@/components/icons";
 import { ReportSheet } from "@/components/ReportSheet";
 import { MobileTabs, Nav } from "@/components/Nav";
 import { URALSK } from "@/lib/geo";
-import { RISK_COLOR, RISK_EMOJI } from "@/lib/risk";
+import { RISK_COLOR } from "@/lib/risk";
 import {
   KIND_EMOJI,
   LEVEL_COLOR,
@@ -88,9 +96,7 @@ export default function MapPage() {
             /* Без WebGL карту не показать, но данные всё равно нужны — списком. */
             <div className="max-h-full w-full max-w-lg overflow-y-auto pt-24 pb-32">
               <div className="mb-3 text-center">
-                <div className="text-3xl" aria-hidden>
-                  🗺️
-                </div>
+                <IconMap className="mx-auto mb-2 h-7 w-7 text-water-500" />
                 <div className="text-sm font-extrabold">{t.map.noWebgl}</div>
                 <p className="lead mt-1 text-xs">{t.map.noWebglHint}</p>
               </div>
@@ -131,9 +137,11 @@ export default function MapPage() {
               onClick={() => setPanelOpen((v) => !v)}
               className="glass pointer-events-auto flex items-center gap-2.5 rounded-full py-2 pr-4 pl-2.5"
             >
-              <span className="text-xl leading-none" aria-hidden>
-                {risk ? RISK_EMOJI[risk.level] : "⏳"}
-              </span>
+              <span
+                className="h-8 w-1.5 shrink-0 rounded-full"
+                style={{ background: risk ? RISK_COLOR[risk.level] : "#cbd5e1" }}
+                aria-hidden
+              />
               <span className="text-left">
                 <span
                   className="block text-sm leading-tight font-extrabold"
@@ -171,9 +179,9 @@ export default function MapPage() {
               className="glass pointer-events-auto grid h-9 w-9 place-items-center rounded-full text-sm"
               aria-label={t.common.refresh}
             >
-              <span className={loading ? "inline-block animate-spin" : ""}>
-                ↻
-              </span>
+              <IconRefresh
+                className={`h-4 w-4 ${loading ? "animate-spin" : ""}`}
+              />
             </button>
           </div>
         </div>
@@ -203,14 +211,14 @@ export default function MapPage() {
                 <ul className="space-y-1.5">
                   {risk?.reasons.map((r) => (
                     <li key={r} className="flex gap-2 text-sm text-ink-soft">
-                      <span className="text-water-400">•</span>
+                      <span className="mt-2 h-1 w-1 shrink-0 rounded-full bg-water-400" />
                       <Reason path={r} />
                     </li>
                   ))}
                 </ul>
                 {data?.hydro && (
                   <div className="mt-4 rounded-2xl bg-water-50 p-3 text-xs font-semibold text-ink-soft">
-                    🌊 {t.hydro.title}:{" "}
+                    {t.hydro.title}:{" "}
                     <b className="text-ink">
                       {data.hydro.discharge != null
                         ? Math.round(data.hydro.discharge)
@@ -286,7 +294,10 @@ export default function MapPage() {
                 showHeat ? "text-water-700" : "text-ink-soft/60"
               }`}
             >
-              🔥 {t.map.layerHeat}
+              <span className="inline-flex items-center gap-1.5">
+                <IconLayers className="h-3.5 w-3.5" />
+                {t.map.layerHeat}
+              </span>
             </button>
           </div>
         </div>
@@ -299,9 +310,11 @@ export default function MapPage() {
             aria-label={t.map.locate}
             title={denied ? t.map.locateError : t.map.locate}
           >
-            <span className={locating ? "animate-pulse" : ""} aria-hidden>
-              {denied ? "🚫" : "🎯"}
-            </span>
+            <IconTarget
+              className={`h-5 w-5 ${locating ? "animate-pulse" : ""} ${
+                denied ? "opacity-40" : ""
+              }`}
+            />
           </button>
           <button
             onClick={() => {
@@ -311,14 +324,14 @@ export default function MapPage() {
             className="glass grid h-12 w-12 place-items-center rounded-full text-xl shadow-lg"
             aria-label={t.map.recenter}
           >
-            <span aria-hidden>🏙️</span>
+            <IconCity className="h-5 w-5" />
           </button>
           <Link
             href="/report"
             className="btn btn-primary grid h-14 w-14 place-items-center rounded-full text-2xl shadow-xl"
             aria-label={t.map.addReport}
           >
-            <span aria-hidden>💧</span>
+            <IconDrop className="h-6 w-6" />
           </Link>
         </div>
 
@@ -359,15 +372,12 @@ export default function MapPage() {
             className="pointer-events-none absolute inset-0 z-[50] grid place-items-center px-6"
           >
             <div className="glass pointer-events-auto max-w-sm rounded-4xl p-8 text-center">
-              <div className="mb-3 text-5xl" aria-hidden>
-                🌤️
-              </div>
               <h3 className="text-lg font-extrabold tracking-[-0.02em]">
                 {t.map.empty}
               </h3>
               <p className="lead mt-2 text-sm">{t.map.emptyHint}</p>
               <Link href="/report" className="btn btn-primary mt-5 px-6 py-3">
-                💧 {t.map.addReport}
+                {t.map.addReport}
               </Link>
             </div>
           </motion.div>
@@ -406,7 +416,8 @@ export default function MapPage() {
                         </span>
                         <span className="block text-[10px] font-semibold text-ink-soft">
                           {ago(r.createdAt)}
-                          {r.status === "confirmed" && " · ✅"}
+                          {r.status === "confirmed" &&
+                            ` · ${t.detail.confirmed.toLowerCase()}`}
                         </span>
                       </span>
                     </button>

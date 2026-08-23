@@ -101,10 +101,3 @@ export const RISK_COLOR: Record<RiskLevel, string> = {
   warning: "#f59e0b",
   danger: "#ef4444",
 };
-
-export const RISK_EMOJI: Record<RiskLevel, string> = {
-  calm: "🟢",
-  watch: "🔵",
-  warning: "🟠",
-  danger: "🔴",
-};

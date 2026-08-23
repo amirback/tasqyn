@@ -85,22 +85,18 @@ export const en: Dict = {
       lead: "In spring 2024 West Kazakhstan was among the hardest-hit regions of the country. The problem isn't missing data. It's the resolution of that data.",
       items: [
         {
-          emoji: "📉",
           title: "A gauge is not your street",
           text: "The hydromet service reports the river at a single point. But water reaches each district differently, and 40 cm decides everything.",
         },
         {
-          emoji: "🕐",
           title: "Bulletins come once a day",
           text: "A flood crosses a city block in that time. By publication the numbers describe a different city.",
         },
         {
-          emoji: "🚗",
           title: "People drive into the water",
           text: "Nobody knows which road is cut until their bumper finds it. Detours are guessed at.",
         },
         {
-          emoji: "📞",
           title: "Help gets lost in group chats",
           text: "\"Need a boat\", \"have sandbags\" sink in WhatsApp threads. Neither the agency nor volunteers ever see them.",
         },
@@ -112,17 +108,14 @@ export const en: Dict = {
       lead: "We don't ask anyone to measure centimetres and fill in a form. That does not work in a panic.",
       steps: [
         {
-          emoji: "📍",
           title: "What you see",
           text: "Water, a cut road, help needed — or the opposite: you can help. Four big buttons.",
         },
         {
-          emoji: "🦵",
           title: "How deep",
           text: "Not in centimetres but against your body: ankle, knee, waist, over your head. We convert to metres for you.",
         },
         {
-          emoji: "📸",
           title: "Send",
           text: "Location fills itself in, a photo is optional. No signal? The report leaves as soon as you're back online.",
         },
@@ -135,17 +128,14 @@ export const en: Dict = {
       lead: "That is why verification is built into the product on day one, not deferred.",
       items: [
         {
-          emoji: "👥",
           title: "Neighbours verify",
           text: "Two confirmations promote a report to \"confirmed\". Two disputes take it off the public map.",
         },
         {
-          emoji: "🔍",
           title: "You can see where the number came from",
           text: "The city risk level is assembled from plain components, each one shown to the user. No black box.",
         },
         {
-          emoji: "🤝",
           title: "Official data alongside, not instead",
           text: "Resident reports sit as their own layer on top of river discharge. We complement the agency, we don't argue with it.",
         },
@@ -157,17 +147,14 @@ export const en: Dict = {
       lead: "Everything on this map comes from sources that are working right now — none of it is drawn by hand.",
       sources: [
         {
-          emoji: "🌊",
           title: "Zhayyk river discharge",
           text: "GloFAS — the Copernicus flood monitoring system. Updated daily and compared against the seasonal normal.",
         },
         {
-          emoji: "🌧️",
           title: "Rainfall and temperature",
           text: "A 14-day forecast. Rain falling on snow is the main accelerant of spring flooding on a floodplain.",
         },
         {
-          emoji: "🗺️",
           title: "City basemap",
           text: "OpenStreetMap: the streets, buildings and river channels of Uralsk, maintained by the community.",
         },
@@ -178,22 +165,18 @@ export const en: Dict = {
       title: "The edge is resolution, not graphics",
       items: [
         {
-          emoji: "⚡",
           title: "Speed",
           text: "A report is visible to everyone a second after it's sent. Not once a day — immediately.",
         },
         {
-          emoji: "🎯",
           title: "Street-level precision",
           text: "Not \"the level in the city\" but \"knee-deep at your junction\". Those are different data.",
         },
         {
-          emoji: "🫱",
           title: "Reach",
           text: "Runs in a phone browser. Nothing to install, no account to create.",
         },
         {
-          emoji: "🛡️",
           title: "It buys time",
           text: "Leave earlier, drive around the flooded road, lift your things in time. Here time is measured in property and lives.",
         },
@@ -204,17 +187,14 @@ export const en: Dict = {
       title: "One map, three different users",
       items: [
         {
-          emoji: "🏠",
           title: "Residents",
           text: "Learn about your own street ahead of the bulletin and know whether you can get through.",
         },
         {
-          emoji: "🚒",
           title: "Emergency service and city hall",
           text: "See flooding hotspots and help requests on one map instead of collecting them by phone.",
         },
         {
-          emoji: "🙌",
           title: "Volunteers",
           text: "Find where hands, a boat or sandbags are actually needed — from the map, not from rumours.",
         },

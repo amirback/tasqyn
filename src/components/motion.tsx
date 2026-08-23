@@ -259,13 +259,7 @@ export function Counter({
 
 /* ── Бегущая строка ────────────────────────────────────────── */
 
-export function Marquee({
-  items,
-  separator = "🌊",
-}: {
-  items: string[];
-  separator?: string;
-}) {
+export function Marquee({ items }: { items: string[] }) {
   const doubled = [...items, ...items];
   return (
     <div className="marquee-pause overflow-hidden py-4">
@@ -276,9 +270,10 @@ export function Marquee({
             className="flex shrink-0 items-center gap-6 px-6 text-lg font-extrabold tracking-[-0.02em] text-water-700/70 sm:text-2xl"
           >
             {item}
-            <span className="text-water-300" aria-hidden>
-              {separator}
-            </span>
+            <span
+              className="h-1.5 w-1.5 rounded-full bg-water-300"
+              aria-hidden
+            />
           </span>
         ))}
       </div>

@@ -4,12 +4,21 @@ import { useCallback, useEffect, useState } from "react";
 import { motion } from "motion/react";
 import { useI18n, useTimeAgo } from "@/i18n";
 import { FloodMap } from "@/components/FloodMap";
+import {
+  IconAlert,
+  IconChart,
+  IconCheck,
+  IconClock,
+  IconDownload,
+  IconRoad,
+  IconShield,
+  IconSos,
+} from "@/components/icons";
 import { Nav } from "@/components/Nav";
 import { Counter } from "@/components/motion";
-import { RISK_COLOR, RISK_EMOJI } from "@/lib/risk";
+import { RISK_COLOR } from "@/lib/risk";
 import {
-  KIND_EMOJI,
-  LEVEL_EMOJI,
+  KIND_COLOR,
   WATER_LEVEL_CM,
   type HydroSnapshot,
   type Report,
@@ -103,9 +112,7 @@ export default function DashboardPage() {
             animate={{ opacity: 1, y: 0 }}
             className="card w-full max-w-sm p-8"
           >
-            <div className="mb-4 text-center text-5xl" aria-hidden>
-              🚒
-            </div>
+            <IconShield className="mx-auto mb-4 h-10 w-10 text-water-500" />
             <h1 className="text-center text-2xl font-extrabold tracking-[-0.03em]">
               {t.dashboard.title}
             </h1>
@@ -125,7 +132,7 @@ export default function DashboardPage() {
             />
             {wrong && (
               <p className="mt-2 text-xs font-bold text-alert">
-                ⚠️ {t.dashboard.wrong}
+                {t.dashboard.wrong}
               </p>
             )}
             <button
@@ -145,9 +152,7 @@ export default function DashboardPage() {
       <>
         <Nav />
         <main className="grid min-h-dvh place-items-center bg-foam">
-          <div className="animate-pulse text-4xl" aria-hidden>
-            🌊
-          </div>
+          <div className="h-8 w-8 animate-spin rounded-full border-3 border-water-100 border-t-water-500" />
         </main>
       </>
     );
@@ -156,12 +161,12 @@ export default function DashboardPage() {
   const { summary, risk, hydro, hotspots, reports } = data;
 
   const cards = [
-    { emoji: "📊", label: t.dashboard.total, value: summary.total },
-    { emoji: "🕐", label: t.dashboard.last24, value: summary.last24h },
-    { emoji: "🆘", label: t.dashboard.help, value: summary.help, alert: true },
-    { emoji: "🚧", label: t.dashboard.roads, value: summary.roads },
-    { emoji: "✅", label: t.dashboard.confirmed, value: summary.confirmed },
-    { emoji: "⚠️", label: t.dashboard.disputed, value: summary.disputed },
+    { Icon: IconChart, label: t.dashboard.total, value: summary.total },
+    { Icon: IconClock, label: t.dashboard.last24, value: summary.last24h },
+    { Icon: IconSos, label: t.dashboard.help, value: summary.help, alert: true },
+    { Icon: IconRoad, label: t.dashboard.roads, value: summary.roads },
+    { Icon: IconCheck, label: t.dashboard.confirmed, value: summary.confirmed },
+    { Icon: IconAlert, label: t.dashboard.disputed, value: summary.disputed },
   ];
 
   return (
@@ -172,7 +177,7 @@ export default function DashboardPage() {
           <header className="mb-6 flex flex-wrap items-end justify-between gap-4">
             <div>
               <h1 className="headline text-3xl sm:text-4xl">
-                🚒 {t.dashboard.title}
+                {t.dashboard.title}
               </h1>
               <p className="lead mt-1 text-sm">{t.dashboard.subtitle}</p>
             </div>
@@ -181,7 +186,8 @@ export default function DashboardPage() {
                 href="/api/dashboard/export"
                 className="btn btn-ghost px-4 py-2.5 text-sm"
               >
-                📥 {t.dashboard.export}
+                <IconDownload className="h-4 w-4" />
+                {t.dashboard.export}
               </a>
               <button
                 onClick={() => void signOut()}
@@ -204,10 +210,12 @@ export default function DashboardPage() {
                   c.alert && c.value > 0 ? "border-alert/40 bg-red-50/40" : ""
                 }`}
               >
-                <div className="text-2xl" aria-hidden>
-                  {c.emoji}
-                </div>
-                <div className="mt-1 text-3xl font-extrabold tracking-[-0.04em] tabular-nums">
+                <c.Icon
+                  className={`h-5 w-5 ${
+                    c.alert && c.value > 0 ? "text-alert" : "text-water-500"
+                  }`}
+                />
+                <div className="mt-2 text-3xl font-extrabold tracking-[-0.04em] tabular-nums">
                   <Counter value={c.value} />
                 </div>
                 <div className="lead mt-0.5 text-[11px] font-semibold">
@@ -234,9 +242,11 @@ export default function DashboardPage() {
               {/* Тревога */}
               <div className="card p-6">
                 <div className="flex items-center gap-3">
-                  <span className="text-3xl" aria-hidden>
-                    {RISK_EMOJI[risk.level]}
-                  </span>
+                  <span
+                    className="h-9 w-1.5 shrink-0 rounded-full"
+                    style={{ background: RISK_COLOR[risk.level] }}
+                    aria-hidden
+                  />
                   <div>
                     <div className="kicker">{t.risk.title}</div>
                     <div
@@ -262,14 +272,14 @@ export default function DashboardPage() {
                 <ul className="mt-4 space-y-1">
                   {risk.reasons.map((r) => (
                     <li key={r} className="flex gap-2 text-xs text-ink-soft">
-                      <span className="text-water-400">•</span>
+                      <span className="mt-1.5 h-1 w-1 shrink-0 rounded-full bg-water-400" />
                       {tp(r)}
                     </li>
                   ))}
                 </ul>
                 {hydro && (
                   <div className="mt-4 rounded-2xl bg-water-50 p-3 text-xs font-semibold">
-                    🌊 {t.hydro.discharge}:{" "}
+                    {t.hydro.discharge}:{" "}
                     <b>
                       {hydro.discharge != null
                         ? Math.round(hydro.discharge)
@@ -309,11 +319,23 @@ export default function DashboardPage() {
                               {h.address ??
                                 `${h.lat.toFixed(4)}, ${h.lng.toFixed(4)}`}
                             </span>
-                            <span className="block text-[10px] font-semibold text-ink-soft">
-                              {h.count} · {h.help > 0 && `🆘${h.help} `}
-                              {h.roads > 0 && `🚧${h.roads} `}
-                              {h.maxLevel > 0 &&
-                                `${LEVEL_EMOJI[h.maxLevel as 1]} ≈${WATER_LEVEL_CM[h.maxLevel as 1]}см`}
+                            <span className="flex flex-wrap items-center gap-x-2 text-[10px] font-semibold text-ink-soft">
+                              <span>{h.count}</span>
+                              {h.help > 0 && (
+                                <span className="text-alert">
+                                  {t.dashboard.help}: {h.help}
+                                </span>
+                              )}
+                              {h.roads > 0 && (
+                                <span className="text-warn">
+                                  {t.dashboard.roads}: {h.roads}
+                                </span>
+                              )}
+                              {h.maxLevel > 0 && (
+                                <span>
+                                  ≈{WATER_LEVEL_CM[h.maxLevel as 1]} см
+                                </span>
+                              )}
                             </span>
                           </span>
                         </button>
@@ -360,17 +382,17 @@ export default function DashboardPage() {
                         {ago(r.createdAt)}
                       </td>
                       <td className="px-4 py-3 whitespace-nowrap">
-                        <span className="mr-1.5" aria-hidden>
-                          {KIND_EMOJI[r.kind]}
-                        </span>
+                        <span
+                          className="mr-2 inline-block h-2 w-2 rounded-full align-middle"
+                          style={{ background: KIND_COLOR[r.kind] }}
+                          aria-hidden
+                        />
                         <span className="text-xs font-semibold">
                           {t.report.kinds[r.kind].title}
                         </span>
                       </td>
                       <td className="px-4 py-3 text-xs font-bold whitespace-nowrap tabular-nums">
-                        {r.level
-                          ? `${LEVEL_EMOJI[r.level]} ${WATER_LEVEL_CM[r.level]} см`
-                          : "—"}
+                        {r.level ? `${WATER_LEVEL_CM[r.level]} см` : "—"}
                       </td>
                       <td className="max-w-52 truncate px-4 py-3 text-xs">
                         {r.address ?? `${r.lat.toFixed(4)}, ${r.lng.toFixed(4)}`}

@@ -4,6 +4,15 @@ import { AnimatePresence, motion } from "motion/react";
 import { useState } from "react";
 import { useI18n, useTimeAgo } from "@/i18n";
 import {
+  IconCheck,
+  IconClose,
+  IconFlag,
+  IconPin,
+  IconQuestion,
+  IconThumbUp,
+  IconTrash,
+} from "./icons";
+import {
   deleteReport as apiDelete,
   resolveReport as apiResolve,
   voteReport as apiVote,
@@ -22,13 +31,6 @@ const STATUS_STYLE: Record<Report["status"], string> = {
   confirmed: "bg-emerald-50 text-emerald-700",
   disputed: "bg-amber-50 text-amber-700",
   resolved: "bg-slate-100 text-slate-500",
-};
-
-const STATUS_EMOJI: Record<Report["status"], string> = {
-  new: "❓",
-  confirmed: "✅",
-  disputed: "⚠️",
-  resolved: "🏁",
 };
 
 interface Props {
@@ -140,7 +142,7 @@ export function ReportSheet({ report, onClose, onChanged, userPosition }: Props)
                 className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-water-50 text-ink-soft transition-colors hover:bg-water-100"
                 aria-label={t.common.close}
               >
-                ✕
+                <IconClose className="h-4 w-4" />
               </button>
             </div>
           </div>
@@ -150,12 +152,18 @@ export function ReportSheet({ report, onClose, onChanged, userPosition }: Props)
               <span
                 className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-bold ${STATUS_STYLE[report.status]}`}
               >
-                <span aria-hidden>{STATUS_EMOJI[report.status]}</span>
+                {report.status === "confirmed" ? (
+                  <IconCheck className="h-3.5 w-3.5" />
+                ) : report.status === "resolved" ? (
+                  <IconFlag className="h-3.5 w-3.5" />
+                ) : (
+                  <IconQuestion className="h-3.5 w-3.5" />
+                )}
                 {t.detail[report.status]}
               </span>
               {report.mine && (
                 <span className="rounded-full bg-water-500 px-3 py-1 text-xs font-bold text-white">
-                  👤 {t.detail.mine}
+                  {t.detail.mine}
                 </span>
               )}
               {report.kind === "water" && report.level && (
@@ -167,7 +175,7 @@ export function ReportSheet({ report, onClose, onChanged, userPosition }: Props)
 
             {report.address && (
               <div className="flex items-start gap-2 rounded-2xl bg-water-50 px-4 py-3">
-                <span aria-hidden>📍</span>
+                <IconPin className="mt-0.5 h-4 w-4 shrink-0 text-water-500" />
                 <span className="text-sm font-semibold">{report.address}</span>
               </div>
             )}
@@ -217,7 +225,8 @@ export function ReportSheet({ report, onClose, onChanged, userPosition }: Props)
                         : "btn-ghost"
                     }`}
                   >
-                    👍 {t.detail.confirm}
+                    <IconThumbUp className="h-4 w-4" />
+                    {t.detail.confirm}
                   </button>
                   <button
                     onClick={() => vote(-1)}
@@ -228,7 +237,8 @@ export function ReportSheet({ report, onClose, onChanged, userPosition }: Props)
                         : "btn-ghost"
                     }`}
                   >
-                    🤔 {t.detail.dispute}
+                    <IconQuestion className="h-4 w-4" />
+                    {t.detail.dispute}
                   </button>
                 </div>
               )}
@@ -241,14 +251,16 @@ export function ReportSheet({ report, onClose, onChanged, userPosition }: Props)
                   disabled={busy}
                   className="btn btn-primary py-3 text-sm"
                 >
-                  🏁 {t.detail.markResolved}
+                  <IconFlag className="h-4 w-4" />
+                  {t.detail.markResolved}
                 </button>
                 <button
                   onClick={remove}
                   disabled={busy}
                   className="btn btn-ghost py-3 text-sm !text-alert"
                 >
-                  🗑️ {t.detail.remove}
+                  <IconTrash className="h-4 w-4" />
+                  {t.detail.remove}
                 </button>
               </div>
             )}

@@ -32,11 +32,11 @@ function ConnectionBanner() {
   }, []);
 
   const message = offline
-    ? { key: "off", text: `📴 ${t.common.offline}`, tone: "bg-ink text-white" }
+    ? { key: "off", text: t.common.offline, tone: "bg-ink text-white" }
     : flushed > 0
       ? {
           key: "sent",
-          text: `✅ ${fmt(t.map.reportsCount, { n: flushed })} · ${t.common.online}`,
+          text: `${fmt(t.map.reportsCount, { n: flushed })} · ${t.common.online}`,
           tone: "bg-safe text-white",
         }
       : null;

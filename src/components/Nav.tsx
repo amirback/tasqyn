@@ -3,16 +3,19 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { motion, useMotionValueEvent, useScroll } from "motion/react";
-import { useState } from "react";
+import { useState, type ComponentType } from "react";
 import { useI18n } from "@/i18n";
 import { LangSwitch } from "./LangSwitch";
 import { Logo, Wordmark } from "./Logo";
+import { IconBell, IconDrop, IconHome, IconMap } from "./icons";
 
-const LINKS = [
-  { href: "/map", key: "map", emoji: "🗺️" },
-  { href: "/report", key: "report", emoji: "📸" },
-  { href: "/alerts", key: "alerts", emoji: "🔔" },
-] as const;
+type NavKey = "home" | "map" | "report" | "alerts";
+
+const LINKS: { href: string; key: NavKey }[] = [
+  { href: "/map", key: "map" },
+  { href: "/report", key: "report" },
+  { href: "/alerts", key: "alerts" },
+];
 
 export function Nav({ transparent = false }: { transparent?: boolean }) {
   const { t } = useI18n();
@@ -64,10 +67,7 @@ export function Nav({ transparent = false }: { transparent?: boolean }) {
                     transition={{ type: "spring", stiffness: 400, damping: 34 }}
                   />
                 )}
-                <span className="relative z-10">
-                  <span className="mr-1.5">{l.emoji}</span>
-                  {t.nav[l.key]}
-                </span>
+                <span className="relative z-10">{t.nav[l.key]}</span>
               </Link>
             );
           })}
@@ -79,8 +79,7 @@ export function Nav({ transparent = false }: { transparent?: boolean }) {
             href="/report"
             className="btn btn-primary px-4 py-2 text-sm sm:px-5"
           >
-            <span aria-hidden>💧</span>
-            <span className="hidden xs:inline sm:inline">{t.nav.report}</span>
+            {t.nav.report}
           </Link>
         </div>
       </nav>
@@ -93,37 +92,35 @@ export function MobileTabs() {
   const { t } = useI18n();
   const pathname = usePathname();
 
-  const tabs = [
-    { href: "/", key: "home", emoji: "🏠", accent: false },
-    { href: "/map", key: "map", emoji: "🗺️", accent: false },
-    { href: "/report", key: "report", emoji: "💧", accent: true },
-    { href: "/alerts", key: "alerts", emoji: "🔔", accent: false },
-  ] as const;
+  const tabs: {
+    href: string;
+    key: NavKey;
+    Icon: ComponentType<{ className?: string }>;
+    accent: boolean;
+  }[] = [
+    { href: "/", key: "home", Icon: IconHome, accent: false },
+    { href: "/map", key: "map", Icon: IconMap, accent: false },
+    { href: "/report", key: "report", Icon: IconDrop, accent: true },
+    { href: "/alerts", key: "alerts", Icon: IconBell, accent: false },
+  ];
 
   return (
     <nav className="fixed inset-x-0 bottom-0 z-[100] px-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] md:hidden">
       <div className="glass mx-auto flex max-w-md items-center justify-around rounded-full p-1.5">
-        {tabs.map((tab) => {
-          const active =
-            tab.href === "/"
-              ? pathname === "/"
-              : pathname.startsWith(tab.href);
+        {tabs.map(({ href, key, Icon, accent }) => {
+          const active = href === "/" ? pathname === "/" : pathname.startsWith(href);
           return (
             <Link
-              key={tab.href}
-              href={tab.href}
-              className={`relative flex min-w-16 flex-col items-center gap-0.5 rounded-full px-3 py-2 text-[10px] font-bold transition-colors ${
-                tab.accent
-                  ? "text-white"
-                  : active
-                    ? "text-water-700"
-                    : "text-ink-soft"
+              key={href}
+              href={href}
+              className={`relative flex min-w-16 flex-col items-center gap-1 rounded-full px-3 py-2 text-[10px] font-bold transition-colors ${
+                accent ? "text-white" : active ? "text-water-700" : "text-ink-soft"
               }`}
             >
-              {tab.accent && (
+              {accent && (
                 <span className="absolute inset-0 rounded-full bg-gradient-to-b from-water-500 to-water-600 shadow-[0_8px_20px_-8px_rgba(2,132,199,0.9)]" />
               )}
-              {!tab.accent && active && (
+              {!accent && active && (
                 <motion.span
                   layoutId="tab-pill"
                   initial={false}
@@ -131,10 +128,8 @@ export function MobileTabs() {
                   transition={{ type: "spring", stiffness: 400, damping: 34 }}
                 />
               )}
-              <span className="relative z-10 text-lg leading-none">
-                {tab.emoji}
-              </span>
-              <span className="relative z-10">{t.nav[tab.key]}</span>
+              <Icon className="relative z-10 h-5 w-5" />
+              <span className="relative z-10">{t.nav[key]}</span>
             </Link>
           );
         })}

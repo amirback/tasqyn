@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useRef } from "react";
+import { useRef, type ComponentType } from "react";
 import { motion, useScroll, useTransform } from "motion/react";
 import { useI18n } from "@/i18n";
 import { useLive } from "@/hooks/useLive";
@@ -18,7 +18,37 @@ import {
   Tilt,
 } from "@/components/motion";
 import { FloatCard, WaterBlobs, WaveDivider } from "@/components/Water";
-import { RISK_COLOR, RISK_EMOJI } from "@/lib/risk";
+import {
+  IconAlert,
+  IconArrowDown,
+  IconBolt,
+  IconCamera,
+  IconChart,
+  IconClock,
+  IconDrop,
+  IconHome,
+  IconLayers,
+  IconMap,
+  IconPin,
+  IconRoad,
+  IconSearch,
+  IconShield,
+  IconSos,
+  IconUsers,
+} from "@/components/icons";
+import { RISK_COLOR } from "@/lib/risk";
+import { KIND_EMOJI, LEVEL_EMOJI } from "@/lib/types";
+
+type Icon = ComponentType<{ className?: string }>;
+
+/* Иконки привязаны к порядку пунктов в словаре — так их не приходится
+   дублировать в трёх переводах. */
+const PROBLEM_ICONS: Icon[] = [IconChart, IconClock, IconRoad, IconSos];
+const HOW_ICONS: Icon[] = [IconPin, IconLayers, IconCamera];
+const TRUST_ICONS: Icon[] = [IconUsers, IconSearch, IconShield];
+const DATA_ICONS: Icon[] = [IconChart, IconDrop, IconMap];
+const WHY_ICONS: Icon[] = [IconBolt, IconPin, IconUsers, IconShield];
+const AUDIENCE_ICONS: Icon[] = [IconHome, IconAlert, IconUsers];
 
 export default function Home() {
   const { t } = useI18n();
@@ -65,7 +95,7 @@ export default function Home() {
                 <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-water-400 opacity-75" />
                 <span className="relative inline-flex h-2 w-2 rounded-full bg-water-500" />
               </span>
-              📍 {t.landing.badge}
+              {t.landing.badge}
             </motion.div>
 
             <h1 className="display text-[3rem] leading-[0.92] sm:text-[4.5rem] lg:text-[5.75rem]">
@@ -99,7 +129,7 @@ export default function Home() {
                   href="/map"
                   className="btn btn-primary px-8 py-4 text-base sm:text-lg"
                 >
-                  🗺️ {t.landing.ctaMap}
+                  {t.landing.ctaMap}
                 </Link>
               </Magnetic>
               <Magnetic strength={0.22}>
@@ -107,7 +137,7 @@ export default function Home() {
                   href="/report"
                   className="btn btn-ghost px-8 py-4 text-base sm:text-lg"
                 >
-                  💧 {t.landing.ctaReport}
+                  {t.landing.ctaReport}
                 </Link>
               </Magnetic>
             </motion.div>
@@ -115,28 +145,25 @@ export default function Home() {
             {/* Плавающие карточки — на широком экране */}
             <div className="pointer-events-none absolute inset-0 hidden lg:block">
               <FloatCard
-                emoji={risk ? RISK_EMOJI[risk.level] : "🌊"}
                 label={t.risk.title}
                 value={risk ? t.risk.levels[risk.level] : "—"}
+                dotColor={risk ? RISK_COLOR[risk.level] : undefined}
                 className="-top-4 -left-24"
                 delay={0.8}
               />
               <FloatCard
-                emoji="💧"
                 label={t.landing.live.active}
                 value={String(stats?.active ?? 0)}
                 className="top-32 -right-28"
                 delay={0.95}
               />
               <FloatCard
-                emoji="🚧"
                 label={t.landing.live.roads}
                 value={String(stats?.roadsBlocked ?? 0)}
                 className="-bottom-8 -left-16"
                 delay={1.1}
               />
               <FloatCard
-                emoji="🌊"
                 label={t.landing.live.river}
                 value={
                   hydro?.discharge != null
@@ -157,9 +184,7 @@ export default function Home() {
           >
             <div className="flex flex-col items-center gap-2 text-[10px] font-bold tracking-[0.2em] text-ink-soft uppercase">
               {t.landing.scroll}
-              <span className="animate-bob text-lg" aria-hidden>
-                ↓
-              </span>
+              <IconArrowDown className="animate-bob h-4 w-4" />
             </div>
           </motion.div>
         </section>
@@ -182,36 +207,17 @@ export default function Home() {
 
             <div className="mt-14 grid grid-cols-2 gap-4 lg:grid-cols-4">
               {[
-                {
-                  emoji: "📊",
-                  label: t.landing.live.reports,
-                  value: stats?.total ?? 0,
-                },
-                {
-                  emoji: "💧",
-                  label: t.landing.live.active,
-                  value: stats?.active ?? 0,
-                },
-                {
-                  emoji: "✅",
-                  label: t.landing.live.confirmed,
-                  value: stats?.confirmed ?? 0,
-                },
-                {
-                  emoji: "🚧",
-                  label: t.landing.live.roads,
-                  value: stats?.roadsBlocked ?? 0,
-                },
+                { label: t.landing.live.reports, value: stats?.total ?? 0 },
+                { label: t.landing.live.active, value: stats?.active ?? 0 },
+                { label: t.landing.live.confirmed, value: stats?.confirmed ?? 0 },
+                { label: t.landing.live.roads, value: stats?.roadsBlocked ?? 0 },
               ].map((item, i) => (
                 <Reveal key={item.label} delay={i * 0.08}>
                   <Tilt className="card card-hover h-full p-6 text-center sm:p-8">
-                    <div className="mb-3 text-4xl sm:text-5xl" aria-hidden>
-                      {item.emoji}
-                    </div>
-                    <div className="text-4xl font-extrabold tracking-[-0.04em] text-water-700 tabular-nums sm:text-5xl">
+                    <div className="text-5xl font-extrabold tracking-[-0.05em] text-water-700 tabular-nums sm:text-6xl">
                       <Counter value={item.value} />
                     </div>
-                    <div className="lead mt-2 text-xs font-semibold sm:text-sm">
+                    <div className="lead mt-3 text-xs font-semibold sm:text-sm">
                       {item.label}
                     </div>
                   </Tilt>
@@ -223,19 +229,20 @@ export default function Home() {
             <Reveal delay={0.15} className="mt-6">
               <div className="card grid gap-6 p-7 sm:p-9 lg:grid-cols-[1.1fr_1fr]">
                 <div>
-                  <div className="flex items-center gap-3">
-                    <span className="text-3xl" aria-hidden>
-                      {risk ? RISK_EMOJI[risk.level] : "⏳"}
+                  <div className="kicker">{t.risk.title}</div>
+                  <div className="mt-1 flex items-center gap-2.5">
+                    <span
+                      className="h-3 w-3 rounded-full"
+                      style={{
+                        background: risk ? RISK_COLOR[risk.level] : "#cbd5e1",
+                      }}
+                    />
+                    <span
+                      className="text-2xl font-extrabold tracking-[-0.03em]"
+                      style={{ color: risk ? RISK_COLOR[risk.level] : undefined }}
+                    >
+                      {risk ? t.risk.levels[risk.level] : t.common.loading}
                     </span>
-                    <div>
-                      <div className="kicker">{t.risk.title}</div>
-                      <div
-                        className="text-2xl font-extrabold tracking-[-0.03em]"
-                        style={{ color: risk ? RISK_COLOR[risk.level] : undefined }}
-                      >
-                        {risk ? t.risk.levels[risk.level] : t.common.loading}
-                      </div>
-                    </div>
                   </div>
 
                   <div className="mt-5 h-2.5 w-full overflow-hidden rounded-full bg-water-50">
@@ -256,7 +263,7 @@ export default function Home() {
                         key={r}
                         className="lead flex items-start gap-2 text-sm"
                       >
-                        <span className="text-water-400">•</span>
+                        <span className="mt-2 h-1 w-1 shrink-0 rounded-full bg-water-400" />
                         <RiskReason path={r} />
                       </li>
                     ))}
@@ -313,7 +320,7 @@ export default function Home() {
             <Reveal delay={0.2} className="mt-8 text-center">
               <Magnetic>
                 <Link href="/map" className="btn btn-primary px-7 py-3.5">
-                  🗺️ {t.landing.live.openMap}
+                  {t.landing.live.openMap}
                 </Link>
               </Magnetic>
             </Reveal>
@@ -333,19 +340,22 @@ export default function Home() {
             </Reveal>
 
             <div className="mt-14 grid gap-4 sm:grid-cols-2">
-              {t.landing.problem.items.map((item, i) => (
-                <Reveal key={item.title} delay={i * 0.08}>
-                  <div className="card card-hover group h-full p-7 sm:p-8">
-                    <div className="mb-4 inline-grid h-14 w-14 place-items-center rounded-2xl bg-water-50 text-3xl transition-transform duration-500 group-hover:scale-110 group-hover:-rotate-6">
-                      <span aria-hidden>{item.emoji}</span>
+              {t.landing.problem.items.map((item, i) => {
+                const Icon = PROBLEM_ICONS[i] ?? IconAlert;
+                return (
+                  <Reveal key={item.title} delay={i * 0.08}>
+                    <div className="card card-hover group h-full p-7 sm:p-8">
+                      <div className="mb-4 inline-grid h-12 w-12 place-items-center rounded-2xl bg-water-50 text-water-600 transition-transform duration-500 group-hover:scale-110">
+                        <Icon className="h-6 w-6" />
+                      </div>
+                      <h3 className="text-xl font-extrabold tracking-[-0.02em]">
+                        {item.title}
+                      </h3>
+                      <p className="lead mt-2.5 text-[0.95rem]">{item.text}</p>
                     </div>
-                    <h3 className="text-xl font-extrabold tracking-[-0.02em]">
-                      {item.title}
-                    </h3>
-                    <p className="lead mt-2.5 text-[0.95rem]">{item.text}</p>
-                  </div>
-                </Reveal>
-              ))}
+                  </Reveal>
+                );
+              })}
             </div>
           </div>
         </section>
@@ -381,26 +391,29 @@ export default function Home() {
 
             <div className="mt-16 grid items-center gap-12 lg:grid-cols-[1fr_auto]">
               <div className="space-y-4">
-                {t.landing.how.steps.map((step, i) => (
-                  <Reveal key={step.title} delay={i * 0.1}>
-                    <div className="flex gap-5 rounded-3xl border border-white/10 bg-white/5 p-6 backdrop-blur transition-colors duration-500 hover:border-water-300/40 hover:bg-white/10">
-                      <div className="grid h-14 w-14 shrink-0 place-items-center rounded-2xl bg-white/10 text-3xl">
-                        <span aria-hidden>{step.emoji}</span>
-                      </div>
-                      <div>
-                        <div className="text-xs font-bold tracking-[0.18em] text-water-300 uppercase">
-                          {String(i + 1).padStart(2, "0")}
+                {t.landing.how.steps.map((step, i) => {
+                  const Icon = HOW_ICONS[i] ?? IconPin;
+                  return (
+                    <Reveal key={step.title} delay={i * 0.1}>
+                      <div className="flex gap-5 rounded-3xl border border-white/10 bg-white/5 p-6 backdrop-blur transition-colors duration-500 hover:border-water-300/40 hover:bg-white/10">
+                        <div className="grid h-12 w-12 shrink-0 place-items-center rounded-2xl bg-white/10 text-water-200">
+                          <Icon className="h-6 w-6" />
                         </div>
-                        <h3 className="mt-1 text-xl font-extrabold tracking-[-0.02em]">
-                          {step.title}
-                        </h3>
-                        <p className="mt-2 text-[0.95rem] leading-relaxed text-water-100/75">
-                          {step.text}
-                        </p>
+                        <div>
+                          <div className="text-xs font-bold tracking-[0.18em] text-water-300 uppercase">
+                            {String(i + 1).padStart(2, "0")}
+                          </div>
+                          <h3 className="mt-1 text-xl font-extrabold tracking-[-0.02em]">
+                            {step.title}
+                          </h3>
+                          <p className="mt-2 text-[0.95rem] leading-relaxed text-water-100/75">
+                            {step.text}
+                          </p>
+                        </div>
                       </div>
-                    </div>
-                  </Reveal>
-                ))}
+                    </Reveal>
+                  );
+                })}
               </div>
 
               <Reveal delay={0.2} className="mx-auto">
@@ -410,9 +423,6 @@ export default function Home() {
 
             <Reveal delay={0.25}>
               <div className="mt-14 rounded-3xl border border-water-300/30 bg-water-500/15 p-7 text-center backdrop-blur sm:p-9">
-                <span className="mr-2 text-2xl" aria-hidden>
-                  💡
-                </span>
                 <span className="text-lg font-bold tracking-[-0.01em] text-water-50 sm:text-xl">
                   {t.landing.how.note}
                 </span>
@@ -433,19 +443,22 @@ export default function Home() {
             </Reveal>
 
             <div className="mt-14 grid gap-4 md:grid-cols-3">
-              {t.landing.trust.items.map((item, i) => (
-                <Reveal key={item.title} delay={i * 0.08}>
-                  <Tilt className="card card-hover h-full p-7 sm:p-8">
-                    <div className="mb-4 text-4xl" aria-hidden>
-                      {item.emoji}
-                    </div>
-                    <h3 className="text-lg font-extrabold tracking-[-0.02em]">
-                      {item.title}
-                    </h3>
-                    <p className="lead mt-2.5 text-[0.95rem]">{item.text}</p>
-                  </Tilt>
-                </Reveal>
-              ))}
+              {t.landing.trust.items.map((item, i) => {
+                const Icon = TRUST_ICONS[i] ?? IconUsers;
+                return (
+                  <Reveal key={item.title} delay={i * 0.08}>
+                    <Tilt className="card card-hover h-full p-7 sm:p-8">
+                      <div className="mb-4 inline-grid h-12 w-12 place-items-center rounded-2xl bg-water-50 text-water-600">
+                        <Icon className="h-6 w-6" />
+                      </div>
+                      <h3 className="text-lg font-extrabold tracking-[-0.02em]">
+                        {item.title}
+                      </h3>
+                      <p className="lead mt-2.5 text-[0.95rem]">{item.text}</p>
+                    </Tilt>
+                  </Reveal>
+                );
+              })}
             </div>
           </div>
         </section>
@@ -463,30 +476,33 @@ export default function Home() {
             </Reveal>
 
             <div className="mt-14 grid gap-4 md:grid-cols-3">
-              {t.landing.data.sources.map((s, i) => (
-                <Reveal key={s.title} delay={i * 0.08}>
-                  <div className="card card-hover h-full p-7">
-                    <div className="mb-4 text-4xl" aria-hidden>
-                      {s.emoji}
-                    </div>
-                    <h3 className="text-lg font-extrabold tracking-[-0.02em]">
-                      {s.title}
-                    </h3>
-                    <p className="lead mt-2.5 text-[0.95rem]">{s.text}</p>
-                    {i === 0 && hydro?.discharge != null && (
-                      <div className="mt-5 rounded-2xl bg-water-50 px-4 py-3">
-                        <div className="text-[10px] font-bold tracking-widest text-water-600 uppercase">
-                          {t.common.updated} ·{" "}
-                          {new Date(hydro.updatedAt).toLocaleDateString("ru-RU")}
-                        </div>
-                        <div className="text-xl font-extrabold text-water-800 tabular-nums">
-                          {Math.round(hydro.discharge)} {t.hydro.unit}
-                        </div>
+              {t.landing.data.sources.map((s, i) => {
+                const Icon = DATA_ICONS[i] ?? IconChart;
+                return (
+                  <Reveal key={s.title} delay={i * 0.08}>
+                    <div className="card card-hover h-full p-7">
+                      <div className="mb-4 inline-grid h-12 w-12 place-items-center rounded-2xl bg-water-50 text-water-600">
+                        <Icon className="h-6 w-6" />
                       </div>
-                    )}
-                  </div>
-                </Reveal>
-              ))}
+                      <h3 className="text-lg font-extrabold tracking-[-0.02em]">
+                        {s.title}
+                      </h3>
+                      <p className="lead mt-2.5 text-[0.95rem]">{s.text}</p>
+                      {i === 0 && hydro?.discharge != null && (
+                        <div className="mt-5 rounded-2xl bg-water-50 px-4 py-3">
+                          <div className="text-[10px] font-bold tracking-widest text-water-600 uppercase">
+                            {t.common.updated} ·{" "}
+                            {new Date(hydro.updatedAt).toLocaleDateString("ru-RU")}
+                          </div>
+                          <div className="text-xl font-extrabold text-water-800 tabular-nums">
+                            {Math.round(hydro.discharge)} {t.hydro.unit}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  </Reveal>
+                );
+              })}
             </div>
           </div>
         </section>
@@ -502,21 +518,24 @@ export default function Home() {
             </Reveal>
 
             <div className="mt-14 grid gap-4 sm:grid-cols-2">
-              {t.landing.why.items.map((item, i) => (
-                <Reveal key={item.title} delay={i * 0.07}>
-                  <div className="card card-hover group flex h-full gap-5 p-7">
-                    <div className="grid h-14 w-14 shrink-0 place-items-center rounded-2xl bg-gradient-to-br from-water-500 to-water-700 text-3xl shadow-[0_10px_24px_-10px_rgba(2,132,199,0.8)] transition-transform duration-500 group-hover:scale-110">
-                      <span aria-hidden>{item.emoji}</span>
+              {t.landing.why.items.map((item, i) => {
+                const Icon = WHY_ICONS[i] ?? IconBolt;
+                return (
+                  <Reveal key={item.title} delay={i * 0.07}>
+                    <div className="card card-hover group flex h-full gap-5 p-7">
+                      <div className="grid h-12 w-12 shrink-0 place-items-center rounded-2xl bg-gradient-to-br from-water-500 to-water-700 text-white shadow-[0_10px_24px_-10px_rgba(2,132,199,0.8)] transition-transform duration-500 group-hover:scale-110">
+                        <Icon className="h-6 w-6" />
+                      </div>
+                      <div>
+                        <h3 className="text-lg font-extrabold tracking-[-0.02em]">
+                          {item.title}
+                        </h3>
+                        <p className="lead mt-2 text-[0.95rem]">{item.text}</p>
+                      </div>
                     </div>
-                    <div>
-                      <h3 className="text-lg font-extrabold tracking-[-0.02em]">
-                        {item.title}
-                      </h3>
-                      <p className="lead mt-2 text-[0.95rem]">{item.text}</p>
-                    </div>
-                  </div>
-                </Reveal>
-              ))}
+                  </Reveal>
+                );
+              })}
             </div>
           </div>
         </section>
@@ -531,19 +550,22 @@ export default function Home() {
               </h2>
             </Reveal>
             <div className="mt-14 grid gap-4 md:grid-cols-3">
-              {t.landing.audience.items.map((item, i) => (
-                <Reveal key={item.title} delay={i * 0.08}>
-                  <Tilt className="card card-hover h-full p-8 text-center">
-                    <div className="mb-4 text-5xl" aria-hidden>
-                      {item.emoji}
-                    </div>
-                    <h3 className="text-lg font-extrabold tracking-[-0.02em]">
-                      {item.title}
-                    </h3>
-                    <p className="lead mt-2.5 text-[0.95rem]">{item.text}</p>
-                  </Tilt>
-                </Reveal>
-              ))}
+              {t.landing.audience.items.map((item, i) => {
+                const Icon = AUDIENCE_ICONS[i] ?? IconHome;
+                return (
+                  <Reveal key={item.title} delay={i * 0.08}>
+                    <Tilt className="card card-hover h-full p-8 text-center">
+                      <div className="mx-auto mb-4 grid h-14 w-14 place-items-center rounded-2xl bg-water-50 text-water-600">
+                        <Icon className="h-7 w-7" />
+                      </div>
+                      <h3 className="text-lg font-extrabold tracking-[-0.02em]">
+                        {item.title}
+                      </h3>
+                      <p className="lead mt-2.5 text-[0.95rem]">{item.text}</p>
+                    </Tilt>
+                  </Reveal>
+                );
+              })}
             </div>
           </div>
         </section>
@@ -569,8 +591,8 @@ export default function Home() {
                     }`}
                   >
                     <div className="flex items-center gap-2">
-                      <span className="text-2xl" aria-hidden>
-                        {["🚀", "🤝", "🇰🇿", "🌍"][i]}
+                      <span className="grid h-7 w-7 place-items-center rounded-full bg-water-100 text-xs font-extrabold text-water-700 tabular-nums">
+                        {i + 1}
                       </span>
                       <span className="kicker !text-[0.7rem]">{p.n}</span>
                     </div>
@@ -616,9 +638,7 @@ export default function Home() {
 
           <div className="relative mx-auto max-w-4xl px-5 py-28 text-center sm:py-36">
             <Reveal>
-              <div className="mb-6 text-6xl sm:text-7xl" aria-hidden>
-                🌊
-              </div>
+              <Logo className="mx-auto mb-7 h-14 w-14" />
               <h2 className="headline text-4xl sm:text-6xl">
                 {t.landing.cta.title}
               </h2>
@@ -631,7 +651,7 @@ export default function Home() {
                     href="/map"
                     className="btn bg-white px-8 py-4 text-base text-water-800 shadow-[0_18px_40px_-16px_rgba(0,0,0,0.6)] hover:-translate-y-0.5 sm:text-lg"
                   >
-                    🗺️ {t.landing.cta.button}
+                    {t.landing.cta.button}
                   </Link>
                 </Magnetic>
                 <Magnetic strength={0.22}>
@@ -639,7 +659,7 @@ export default function Home() {
                     href="/report"
                     className="btn border border-white/30 bg-white/10 px-8 py-4 text-base text-white backdrop-blur hover:bg-white/20 sm:text-lg"
                   >
-                    💧 {t.landing.cta.secondary}
+                    {t.landing.cta.secondary}
                   </Link>
                 </Magnetic>
               </div>
@@ -657,38 +677,33 @@ export default function Home() {
                   <Wordmark className="!text-white" />
                 </div>
                 <p className="mt-3 max-w-sm text-sm">{t.brand.tagline}</p>
-                <p className="mt-1 text-sm">🇰🇿 {t.landing.footer.made}</p>
+                <p className="mt-1 text-sm">{t.landing.footer.made}</p>
               </div>
 
               <div className="flex flex-col gap-3">
-                <Link href="/map" className="text-sm font-semibold hover:text-white">
-                  🗺️ {t.nav.map}
-                </Link>
-                <Link
-                  href="/report"
-                  className="text-sm font-semibold hover:text-white"
-                >
-                  💧 {t.nav.report}
-                </Link>
-                <Link
-                  href="/alerts"
-                  className="text-sm font-semibold hover:text-white"
-                >
-                  🔔 {t.nav.alerts}
-                </Link>
-                <Link
-                  href="/dashboard"
-                  className="text-sm font-semibold hover:text-white"
-                >
-                  🚒 {t.nav.dashboard}
-                </Link>
+                {(
+                  [
+                    ["/map", t.nav.map],
+                    ["/report", t.nav.report],
+                    ["/alerts", t.nav.alerts],
+                    ["/dashboard", t.nav.dashboard],
+                  ] as const
+                ).map(([href, label]) => (
+                  <Link
+                    key={href}
+                    href={href}
+                    className="text-sm font-semibold hover:text-white"
+                  >
+                    {label}
+                  </Link>
+                ))}
               </div>
 
               <div className="max-w-xs">
                 <LangSwitch tone="dark" />
                 <div className="mt-5 rounded-2xl border border-alert/40 bg-alert/10 p-4">
                   <div className="text-xs font-bold tracking-widest text-white/80 uppercase">
-                    ☎️ {t.landing.footer.emergency}
+                    {t.landing.footer.emergency}
                   </div>
                   <a
                     href="tel:112"
@@ -717,7 +732,10 @@ function RiskReason({ path }: { path: string }) {
   return <span>{tp(path)}</span>;
 }
 
-/** Макет телефона с интерфейсом отправки — показывает продукт, а не описывает. */
+/**
+ * Макет телефона с интерфейсом отправки — показывает продукт, а не описывает.
+ * Эмодзи здесь остаются: в живом приложении на этих кнопках ровно они.
+ */
 function PhoneMock() {
   const { t } = useI18n();
   return (
@@ -734,10 +752,10 @@ function PhoneMock() {
           <div className="mt-3 grid grid-cols-2 gap-2">
             {(
               [
-                ["💧", t.report.kinds.water.title, true],
-                ["🚧", t.report.kinds.road.title, false],
-                ["🆘", t.report.kinds.help.title, false],
-                ["🛟", t.report.kinds.safe.title, false],
+                [KIND_EMOJI.water, t.report.kinds.water.title, true],
+                [KIND_EMOJI.road, t.report.kinds.road.title, false],
+                [KIND_EMOJI.help, t.report.kinds.help.title, false],
+                [KIND_EMOJI.safe, t.report.kinds.safe.title, false],
               ] as const
             ).map(([emoji, label, active]) => (
               <div
@@ -759,9 +777,9 @@ function PhoneMock() {
           <div className="mt-3 space-y-1.5">
             {(
               [
-                ["🩴", t.report.levels.l1.title],
-                ["🦵", t.report.levels.l2.title],
-                ["🧍", t.report.levels.l3.title],
+                [LEVEL_EMOJI[1], t.report.levels.l1.title],
+                [LEVEL_EMOJI[2], t.report.levels.l2.title],
+                [LEVEL_EMOJI[3], t.report.levels.l3.title],
               ] as const
             ).map(([emoji, label], i) => (
               <div
