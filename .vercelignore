@@ -1,5 +1,7 @@
-.env
-.env.*
-data/
-.next/
-node_modules/
+# Пути привязаны к корню: без ведущего слэша «data/» совпадал бы и с
+# src/app/api/dashboard/data — маршрут переставал попадать в деплой.
+/.env
+/.env.*
+/data/
+/.next/
+/node_modules/
