@@ -273,6 +273,20 @@ export default function MapPage() {
           )}
         </AnimatePresence>
 
+        {/* Хранилище временное — говорим прямо, а не прячем в README */}
+        {data?.ephemeral && (
+          <div className="pointer-events-none absolute inset-x-0 top-32 z-[58] px-3 sm:top-36 sm:px-5">
+            <div className="pointer-events-auto mx-auto max-w-md rounded-2xl border border-amber-200 bg-amber-50/95 px-4 py-2.5 backdrop-blur">
+              <div className="text-xs font-extrabold text-amber-800">
+                {t.common.ephemeral}
+              </div>
+              <div className="mt-0.5 text-[11px] leading-snug text-amber-700">
+                {t.common.ephemeralHint}
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* Как поставить метку — один раз при первом заходе */}
         <AnimatePresence>
           {showHowTo && (

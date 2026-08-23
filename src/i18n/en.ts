@@ -38,6 +38,9 @@ export const en: Dict = {
     open: "Open",
     offline: "You're offline — the report will send itself",
     online: "Back online",
+    ephemeral: "Demo mode: reports are not being stored",
+    ephemeralHint:
+      "No database is connected yet, so markers disappear when the server restarts. The project README explains how to connect one.",
     of: "of",
     yes: "Yes",
     no: "No",

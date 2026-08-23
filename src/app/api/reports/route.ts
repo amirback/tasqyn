@@ -1,5 +1,5 @@
 import { NextResponse, type NextRequest } from "next/server";
-import { db } from "@/lib/db";
+import { db, isEphemeral } from "@/lib/db";
 import { getHydro } from "@/lib/hydro";
 import { rateLimit } from "@/lib/ratelimit";
 import {
@@ -96,7 +96,13 @@ export async function GET(req: NextRequest) {
         : await listReports({ sinceMs: PERIODS["24h"], limit: 1000 });
 
     return NextResponse.json(
-      { reports, stats, hydro, risk: assessRisk(hydro, forRisk) },
+      {
+        reports,
+        stats,
+        hydro,
+        risk: assessRisk(hydro, forRisk),
+        ephemeral: isEphemeral(),
+      },
       { headers: { "cache-control": "no-store" } },
     );
   } catch (e) {

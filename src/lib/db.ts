@@ -9,6 +9,15 @@ import path from "node:path";
  * Диалект один и тот же, поэтому кода для «второго режима» не существует.
  */
 
+/**
+ * true, когда база живёт в /tmp бессерверной функции: записи исчезают при
+ * перезапуске инстанса. Интерфейс обязан сказать об этом вслух — сервис,
+ * который молча теряет сообщение о воде, хуже, чем его отсутствие.
+ */
+export function isEphemeral(): boolean {
+  return !process.env.TURSO_DATABASE_URL && !!process.env.VERCEL;
+}
+
 let client: Client | null = null;
 let ready: Promise<void> | null = null;
 

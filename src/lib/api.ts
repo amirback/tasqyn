@@ -35,6 +35,8 @@ export interface ReportsResponse {
   stats: Stats;
   hydro: HydroSnapshot | null;
   risk: RiskAssessment;
+  /** Хранилище временное — сообщения не переживут перезапуск сервера. */
+  ephemeral?: boolean;
 }
 
 export function fetchReports(params: {

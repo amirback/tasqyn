@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { AnimatePresence, motion } from "motion/react";
 import { useI18n } from "@/i18n";
+import { useLive } from "@/hooks/useLive";
 import { useGeolocation } from "@/hooks/useGeolocation";
 import { FloodMap } from "@/components/FloodMap";
 import {
@@ -50,6 +51,7 @@ export default function ReportPage() {
   const [queued, setQueued] = useState(false);
 
   const { position, locate, loading: locating, denied } = useGeolocation();
+  const { data: live } = useLive({ period: "24h", pollMs: 0 });
   const fileRef = useRef<HTMLInputElement>(null);
   const geocodeTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -549,6 +551,17 @@ export default function ReportPage() {
                 <p className="lead mx-auto mt-3 max-w-md text-sm">
                   {queued ? t.report.queuedText : t.report.successText}
                 </p>
+
+                {live?.ephemeral && (
+                  <div className="mx-auto mt-5 max-w-md rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-left">
+                    <div className="text-xs font-extrabold text-amber-800">
+                      {t.common.ephemeral}
+                    </div>
+                    <div className="mt-0.5 text-[11px] leading-snug text-amber-700">
+                      {t.common.ephemeralHint}
+                    </div>
+                  </div>
+                )}
 
                 <div className="mt-8 flex flex-col gap-2 sm:flex-row sm:justify-center">
                   <button
