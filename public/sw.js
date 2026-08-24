@@ -1,19 +1,24 @@
 /**
  * Service worker Tasqyn.
  *
- * Задача одна: если человек уже открывал приложение, оно должно открыться
- * и без сети — чтобы можно было составить сообщение и отдать его очереди.
- * Свежесть данных при этом важнее кеша, поэтому API всегда идёт в сеть первым.
+ * Задача одна: если человек уже открывал приложение, оно должно открыться и
+ * без сети — чтобы можно было составить сообщение и отдать его очереди.
+ *
+ * Чего он НЕ делает: не кеширует скрипты и стили приложения. Раньше кешировал,
+ * и это вышло боком — после обновления сайта у вернувшегося посетителя ещё
+ * долго открывалась старая сборка со старыми багами. Ради экономии пары
+ * сотен килобайт такое не делают, тем более в сервисе про паводок, где
+ * исправление должно доезжать до людей сразу.
  */
 
 const DEV =
   self.location.hostname === "localhost" || self.location.hostname === "127.0.0.1";
 
-const VERSION = "tasqyn-v2";
+const VERSION = "tasqyn-v3";
 const SHELL = `${VERSION}-shell`;
 const RUNTIME = `${VERSION}-runtime`;
 
-const SHELL_URLS = ["/", "/map", "/report", "/alerts", "/icon.svg", "/manifest.webmanifest"];
+const SHELL_URLS = ["/", "/map", "/report", "/alerts"];
 
 self.addEventListener("install", (event) => {
   event.waitUntil(
@@ -31,9 +36,7 @@ self.addEventListener("activate", (event) => {
       .keys()
       .then((keys) =>
         Promise.all(
-          keys
-            .filter((k) => !k.startsWith(VERSION))
-            .map((k) => caches.delete(k)),
+          keys.filter((k) => !k.startsWith(VERSION)).map((k) => caches.delete(k)),
         ),
       )
       .then(() => self.clients.claim()),
@@ -43,21 +46,15 @@ self.addEventListener("activate", (event) => {
 self.addEventListener("fetch", (event) => {
   const { request } = event;
   if (request.method !== "GET") return;
-  // В разработке ничего не кешируем: иначе правки не видно до сброса кеша.
   if (DEV) return;
 
   const url = new URL(request.url);
 
-  // API: только сеть. Устаревшая карта паводка опаснее пустого экрана.
-  if (url.origin === self.location.origin && url.pathname.startsWith("/api/")) {
-    // Фото неизменяемы — их кешируем.
-    if (url.pathname.startsWith("/api/photo/")) {
-      event.respondWith(cacheFirst(request, RUNTIME));
-    }
-    return;
-  }
-
-  // Навигация: сеть, при отказе — сохранённая оболочка.
+  /*
+   * Навигация: сначала сеть, при отказе — сохранённая копия. Так человек без
+   * связи всё равно попадает в приложение, а со связью всегда получает
+   * свежую страницу.
+   */
   if (request.mode === "navigate") {
     event.respondWith(
       fetch(request)
@@ -75,13 +72,26 @@ self.addEventListener("fetch", (event) => {
     return;
   }
 
-  // Статика приложения и тайлы карты.
-  if (
-    url.origin === self.location.origin ||
-    url.hostname.endsWith("openfreemap.org")
-  ) {
-    event.respondWith(staleWhileRevalidate(request, RUNTIME));
+  // Фото неизменяемы: id выдаётся один раз вместе с сообщением.
+  if (url.origin === self.location.origin && url.pathname.startsWith("/api/photo/")) {
+    event.respondWith(cacheFirst(request, RUNTIME));
+    return;
   }
+
+  // Остальное API всегда из сети: устаревшая карта паводка опаснее пустого экрана.
+  if (url.origin === self.location.origin && url.pathname.startsWith("/api/")) return;
+
+  // Тайлы карты — тяжёлые и неизменяемые, их кешировать полезно.
+  if (url.hostname.endsWith("openfreemap.org")) {
+    event.respondWith(staleWhileRevalidate(request, RUNTIME));
+    return;
+  }
+
+  /*
+   * Всё остальное — скрипты, стили, шрифты приложения — отдаём браузеру как
+   * есть. У Next.js имена файлов содержат хеш содержимого, обычный HTTP-кеш
+   * справляется с этим лучше и, главное, не переживает обновление сайта.
+   */
 });
 
 function cacheFirst(request, cacheName) {
@@ -133,7 +143,6 @@ self.addEventListener("push", (event) => {
       badge: "/icon-192.png",
       tag: payload.tag,
       renotify: true,
-      requireInteraction: false,
       data: { url: payload.url },
     }),
   );

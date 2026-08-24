@@ -82,7 +82,15 @@ export function Reveal({
   );
 }
 
-/** Заголовок, который «всплывает» словами — фирменный приём лендинга. */
+/**
+ * Заголовок, который «всплывает» словами.
+ *
+ * Главный заголовок сайта НЕ должен зависеть от того, отработал ли JavaScript.
+ * Раньше слова стартовали с opacity 0 и сдвигом внутри overflow-hidden: стоило
+ * анимации не запуститься — и строка оставалась невидимой, продолжая занимать
+ * место. Поэтому текст над сгибом (`immediate`) рисуется обычным текстом, без
+ * единого скрытого состояния; анимация осталась там, где она украшение.
+ */
 export function RevealWords({
   text,
   className,
@@ -92,15 +100,12 @@ export function RevealWords({
   text: string;
   className?: string;
   delay?: number;
-  /**
-   * Для текста над сгибом. Он уже в кадре — ждать прокрутки незачем,
-   * а главное, заголовок не должен зависеть от того, сработал ли
-   * IntersectionObserver: невидимый первый экран дороже любой анимации.
-   */
+  /** Текст над сгибом: показываем сразу, без анимации появления. */
   immediate?: boolean;
 }) {
   const words = text.split(" ");
-  const target = { y: "0%", opacity: 1 };
+
+  if (immediate) return <span className={className}>{text}</span>;
 
   return (
     <span className={className}>
@@ -109,12 +114,8 @@ export function RevealWords({
           <motion.span
             className="inline-block"
             initial={{ y: "108%", opacity: 0 }}
-            {...(immediate
-              ? { animate: target }
-              : {
-                  whileInView: target,
-                  viewport: { once: true, margin: "-10%" },
-                })}
+            whileInView={{ y: "0%", opacity: 1 }}
+            viewport={{ once: true, margin: "-10%" }}
             transition={{
               duration: 0.9,
               delay: delay + i * 0.055,
@@ -122,7 +123,7 @@ export function RevealWords({
             }}
           >
             {word}
-            {i < words.length - 1 ? " " : ""}
+            {i < words.length - 1 ? " " : ""}
           </motion.span>
         </span>
       ))}
