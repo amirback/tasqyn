@@ -1,19 +1,48 @@
+import { peakBandOf, type PeakBand } from "./climatology";
 import type { HydroSnapshot, Report, RiskAssessment, RiskLevel } from "./types";
 
 /**
- * Общий уровень тревоги по городу.
+ * Уровень тревоги по городу.
  *
  * Считаем прозрачно и показываем пользователю все слагаемые: он должен видеть,
- * ПОЧЕМУ ему говорят «опасно». Непрозрачный «AI-скор» в теме, где речь идёт
- * об эвакуации, доверия не заслуживает.
+ * ПОЧЕМУ ему говорят «опасно». Непрозрачный скор в теме, где по экрану решают,
+ * уезжать или нет, доверия не заслуживает.
+ *
+ * Пороги по реке взяты не с потолка, а из 20 лет архива GloFAS
+ * (см. scripts/build-climatology.mjs). Ключевой урок этих данных: относительное
+ * отклонение обманывает. В августе расход вчетверо выше медианы того же дня —
+ * и это по-прежнему межень. Поэтому опасность меряется по распределению
+ * ГОДОВЫХ пиков реки: `typical` — обычный весенний максимум, `high` — выше
+ * трёх четвертей лет, `severe` — уровень самых больших паводков, включая
+ * апрель 2024 года, когда Уральск затопило.
+ *
+ * И главное ограничение, которое стоит держать в голове: расход в реке
+ * описывает реку, а не улицы. Сообщения жителей весят здесь не меньше модели.
  */
 
-const WEIGHTS = {
-  anomaly: 30, // насколько река выше своей нормы
-  trend: 10, // растёт ли расход воды
-  precip: 15, // осадки в ближайшие 3 дня
-  reports: 25, // сколько людей сообщает о воде
-  severity: 20, // насколько глубоко по их словам
+const RIVER_NOW: Record<PeakBand, number> = {
+  unknown: 0,
+  base: 0,
+  low: 4,
+  typical: 12,
+  high: 24,
+  severe: 34,
+};
+
+const RIVER_FORECAST: Record<PeakBand, number> = {
+  unknown: 0,
+  base: 0,
+  low: 2,
+  typical: 8,
+  high: 18,
+  severe: 26,
+};
+
+const REASON_BY_BAND: Partial<Record<PeakBand, string>> = {
+  low: "risk.reason.riverLow",
+  typical: "risk.reason.riverTypical",
+  high: "risk.reason.riverHigh",
+  severe: "risk.reason.riverSevere",
 };
 
 export function assessRisk(
@@ -23,38 +52,55 @@ export function assessRisk(
   const reasons: string[] = [];
   let score = 0;
 
-  if (hydro?.anomalyPct != null) {
-    const a = hydro.anomalyPct;
-    if (a >= 200) {
-      score += WEIGHTS.anomaly;
-      reasons.push("risk.reason.anomalyHigh");
-    } else if (a >= 60) {
-      score += WEIGHTS.anomaly * 0.6;
-      reasons.push("risk.reason.anomalyMid");
-    } else if (a >= 20) {
-      score += WEIGHTS.anomaly * 0.3;
-      reasons.push("risk.reason.anomalyLow");
-    }
+  /* ── Река сейчас ─────────────────────────────────────── */
+  const nowBand = peakBandOf(hydro?.discharge ?? null, "uralsk");
+  score += RIVER_NOW[nowBand];
+  const nowReason = REASON_BY_BAND[nowBand];
+  if (nowReason && nowBand !== "low") reasons.push(nowReason);
+
+  /* ── Река по прогнозу на две недели ──────────────────── */
+  const peak = hydro?.outlook?.peakDischarge ?? null;
+  const peakBand = peakBandOf(peak, "uralsk");
+  // Прогноз добавляет вес, только если он хуже сегодняшнего дня.
+  if (RIVER_FORECAST[peakBand] > RIVER_FORECAST[nowBand]) {
+    score += RIVER_FORECAST[peakBand] - RIVER_FORECAST[nowBand];
+    reasons.push("risk.reason.forecastRise");
   }
 
-  if (hydro?.trend === "rising") {
-    score += WEIGHTS.trend;
-    reasons.push("risk.reason.rising");
+  /* ── Что идёт сверху ─────────────────────────────────── */
+  const upstream = hydro?.outlook?.upstream ?? [];
+  const upstreamAlarm = upstream.some(
+    (u) =>
+      u.trend === "rising" &&
+      (peakBandOf(u.discharge, u.key) === "high" ||
+        peakBandOf(u.discharge, u.key) === "severe"),
+  );
+  if (upstreamAlarm) {
+    score += 12;
+    reasons.push("risk.reason.upstreamRising");
   }
 
-  if (hydro?.precip3d != null) {
-    if (hydro.precip3d >= 25) {
-      score += WEIGHTS.precip;
-      reasons.push("risk.reason.rainHigh");
-    } else if (hydro.precip3d >= 8) {
-      score += WEIGHTS.precip * 0.5;
-      reasons.push("risk.reason.rainMid");
-    }
+  /* ── Погода ──────────────────────────────────────────── */
+  const precip = hydro?.outlook?.precip3d ?? null;
+  if (precip != null && precip >= 25) {
+    score += 10;
+    reasons.push("risk.reason.rainHigh");
+  } else if (precip != null && precip >= 8) {
+    score += 5;
+    reasons.push("risk.reason.rainMid");
   }
 
+  const thaw = hydro?.outlook?.thawDays ?? 0;
+  if (thaw >= 3) {
+    score += 8;
+    reasons.push("risk.reason.thaw");
+  }
+
+  /* ── Сообщения жителей: данные с земли ───────────────── */
   const day = Date.now() - 24 * 60 * 60 * 1000;
   const fresh = reports.filter(
-    (r) => r.createdAt >= day && r.status !== "disputed" && r.status !== "resolved",
+    (r) =>
+      r.createdAt >= day && r.status !== "disputed" && r.status !== "resolved",
   );
   const water = fresh.filter((r) => r.kind === "water");
   const roads = fresh.filter((r) => r.kind === "road");
@@ -62,22 +108,22 @@ export function assessRisk(
 
   const activity = water.length + roads.length * 1.5 + help.length * 3;
   if (activity >= 30) {
-    score += WEIGHTS.reports;
+    score += 25;
     reasons.push("risk.reason.manyReports");
   } else if (activity >= 10) {
-    score += WEIGHTS.reports * 0.6;
+    score += 15;
     reasons.push("risk.reason.someReports");
   } else if (activity >= 3) {
-    score += WEIGHTS.reports * 0.25;
+    score += 6;
     reasons.push("risk.reason.fewReports");
   }
 
   const deep = water.filter((r) => (r.level ?? 0) >= 3).length;
   if (deep >= 5) {
-    score += WEIGHTS.severity;
+    score += 20;
     reasons.push("risk.reason.deepWater");
   } else if (deep >= 1) {
-    score += WEIGHTS.severity * 0.5;
+    score += 10;
     reasons.push("risk.reason.someDeepWater");
   }
 

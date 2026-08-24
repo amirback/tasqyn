@@ -1,4 +1,4 @@
-import { NextResponse, type NextRequest } from "next/server";
+import { after, NextResponse, type NextRequest } from "next/server";
 import { db, isEphemeral } from "@/lib/db";
 import { getHydro } from "@/lib/hydro";
 import { rateLimit } from "@/lib/ratelimit";
@@ -8,6 +8,7 @@ import {
   newId,
   validateReport,
 } from "@/lib/reports";
+import { notifyNearby } from "@/lib/push";
 import { assessRisk } from "@/lib/risk";
 import type { ReportKind, Stats } from "@/lib/types";
 import { REPORT_KINDS } from "@/lib/types";
@@ -152,6 +153,26 @@ export async function POST(req: NextRequest) {
     }
 
     const report = await createReport({ ...input, photoId });
+
+    /*
+     * Уведомления шлём событийно: тревога возникает ровно в момент появления
+     * сообщения, отдельный планировщик не нужен.
+     *
+     * Именно after(), а не «запустили и забыли». Бессерверная функция вправе
+     * заснуть сразу после ответа, и промис, за которым никто не следит, просто
+     * не доживёт до отправки — локально это работало бы, а на бою уведомления
+     * молча терялись бы. after() держит функцию живой до конца работы, не
+     * задерживая при этом ответ автору сообщения.
+     */
+    after(async () => {
+      try {
+        const sent = await notifyNearby(report, dev);
+        if (sent) console.log(`push: отправлено ${sent}`);
+      } catch (e) {
+        console.error("push", e);
+      }
+    });
+
     return NextResponse.json({ report }, { status: 201 });
   } catch (e) {
     console.error("POST /api/reports", e);

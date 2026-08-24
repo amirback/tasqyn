@@ -73,16 +73,33 @@ const SCHEMA = [
     created_at INTEGER NOT NULL,
     PRIMARY KEY (report_id, device_id)
   )`,
-  `CREATE TABLE IF NOT EXISTS subscriptions (
+  /*
+   * Подписки на push. Чтобы предупреждение дошло при закрытом браузере,
+   * серверу приходится знать, куда смотреть, — иначе некому проверять.
+   * Поэтому здесь лежит минимум: адрес хранится округлённым до ~100 м,
+   * без названия и без чего-либо, что указывает на человека. Название
+   * места («дом», «мама») остаётся только в телефоне.
+   */
+  `CREATE TABLE IF NOT EXISTS push_subs (
     id         TEXT PRIMARY KEY,
     device_id  TEXT NOT NULL,
-    label      TEXT NOT NULL,
+    endpoint   TEXT NOT NULL UNIQUE,
+    p256dh     TEXT NOT NULL,
+    auth       TEXT NOT NULL,
+    locale     TEXT NOT NULL DEFAULT 'ru',
+    created_at INTEGER NOT NULL
+  )`,
+  `CREATE INDEX IF NOT EXISTS idx_push_device ON push_subs (device_id)`,
+  `CREATE TABLE IF NOT EXISTS push_areas (
+    id         TEXT PRIMARY KEY,
+    sub_id     TEXT NOT NULL,
     lat        REAL NOT NULL,
     lng        REAL NOT NULL,
     radius_m   INTEGER NOT NULL,
+    notified_at INTEGER NOT NULL DEFAULT 0,
     created_at INTEGER NOT NULL
   )`,
-  `CREATE INDEX IF NOT EXISTS idx_subs_device ON subscriptions (device_id)`,
+  `CREATE INDEX IF NOT EXISTS idx_areas_sub ON push_areas (sub_id)`,
 ];
 
 async function migrate(c: Client) {

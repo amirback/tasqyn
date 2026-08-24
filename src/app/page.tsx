@@ -151,11 +151,11 @@ export default function Home() {
                   unit: t.hydro.unit,
                 },
                 {
-                  label: t.hydro.anomaly,
-                  value:
-                    hydro?.anomalyPct != null
-                      ? `${hydro.anomalyPct > 0 ? "+" : ""}${hydro.anomalyPct}%`
-                      : "—",
+                  // Не «отклонение от нормы»: в межень оно бывает
+                  // трёхзначным и пугает на ровном месте. Показываем, где
+                  // река относительно своих годовых пиков.
+                  label: t.hydro.title,
+                  value: hydro ? t.hydro.flood[hydro.floodBand] : "—",
                 },
                 {
                   label: t.risk.title,

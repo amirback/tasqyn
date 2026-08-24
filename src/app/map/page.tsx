@@ -419,24 +419,12 @@ export default function MapPage() {
           </Link>
         </div>
 
-        {/* Пустое состояние */}
-        {!loading && reports.length === 0 && (
-          <motion.div
-            initial={{ opacity: 0, scale: 0.94 }}
-            animate={{ opacity: 1, scale: 1 }}
-            className="pointer-events-none absolute inset-0 z-[50] grid place-items-center px-6"
-          >
-            <div className="glass pointer-events-auto max-w-sm rounded-4xl p-8 text-center">
-              <h3 className="text-lg font-extrabold tracking-[-0.02em]">
-                {t.map.empty}
-              </h3>
-              <p className="lead mt-2 text-sm">{t.map.emptyHint}</p>
-              <Link href="/report" className="btn btn-primary mt-5 px-6 py-3">
-                {t.map.addReport}
-              </Link>
-            </div>
-          </motion.div>
-        )}
+        {/*
+          Раньше на пустой карте посреди экрана висела большая карточка
+          «Пока сообщений нет». Она закрывала обзор ровно тем, ради чего
+          человек и открыл карту. Счётчик в верхней плашке и так показывает
+          ноль, а кнопка «Сообщить» стоит внизу — этого достаточно.
+        */}
 
         {/*
           Лента и легенда живут в одной колонке: раньше они стояли двумя

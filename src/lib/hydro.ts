@@ -1,4 +1,11 @@
 import { URALSK } from "./geo";
+import {
+  bandOf,
+  peakBandOf,
+  percentileOf,
+  REFERENCE_PERIOD,
+  statsFor,
+} from "./climatology";
 import type {
   HydroDay,
   HydroSnapshot,
@@ -107,11 +114,17 @@ function upstreamFrom(
       normal: null,
       anomalyPct: null,
       trend: "stable",
+      band: "unknown",
+      percentile: null,
+      floodBand: "unknown",
     };
   }
   const i = todayIndex(series.time);
   const discharge = series.discharge[i] ?? null;
-  const normal = series.mean[i] ?? null;
+  // Норму берём из собственной климатологии, а не из river_discharge_mean:
+  // то поле для прошедших дат совпадает с самим расходом.
+  const stats = statsFor(key, series.time[i]);
+  const normal = stats?.p50 ?? null;
   return {
     key,
     distanceKm,
@@ -120,6 +133,9 @@ function upstreamFrom(
     anomalyPct: pct(discharge, normal),
     // Тренд считаем по прошлой неделе — это уже случившийся факт, не прогноз.
     trend: trendOf(series.discharge.slice(Math.max(0, i - 7), i + 1)),
+    band: bandOf(discharge, stats),
+    percentile: percentileOf(discharge, stats),
+    floodBand: peakBandOf(discharge, key),
   };
 }
 
@@ -148,7 +164,6 @@ export async function getHydro(): Promise<HydroSnapshot> {
     return {
       date,
       discharge: localRes?.discharge[i] ?? null,
-      dischargeMean: localRes?.mean[i] ?? null,
       precipitation: wi >= 0 ? (w.precipitation_sum?.[wi] ?? null) : null,
       tempMax: wi >= 0 ? (w.temperature_2m_max?.[wi] ?? null) : null,
     };
@@ -157,7 +172,8 @@ export async function getHydro(): Promise<HydroSnapshot> {
   const i = dates.length ? todayIndex(dates) : 0;
   const current = days[i] ?? null;
   const now = current?.discharge ?? null;
-  const normal = current?.dischargeMean ?? null;
+  const stats = current ? statsFor("uralsk", current.date) : null;
+  const normal = stats?.p50 ?? null;
 
   const sum = (arr: (number | null)[] | undefined, from: number, to: number) => {
     if (!arr) return null;
@@ -221,6 +237,11 @@ export async function getHydro(): Promise<HydroSnapshot> {
     precip3d,
     days,
     outlook,
+    band: bandOf(now, stats),
+    percentile: percentileOf(now, stats),
+    floodBand: peakBandOf(now, "uralsk"),
+    recordForDate: stats?.max ?? null,
+    referencePeriod: REFERENCE_PERIOD,
   };
 
   cache = { at: Date.now(), data };

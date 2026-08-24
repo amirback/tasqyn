@@ -1,6 +1,7 @@
 "use client";
 
 import { useI18n } from "@/i18n";
+import { IconArrowRight } from "./icons";
 import type { HydroSnapshot } from "@/lib/types";
 
 /**
@@ -160,6 +161,31 @@ export function ForecastPanel({
 
       <Sparkline hydro={hydro} />
 
+      {/* Где река относительно самой себя — и факт по перцентилю рядом */}
+      <div className="mt-3 rounded-2xl bg-water-50/70 p-3">
+        <div className="flex flex-wrap items-baseline justify-between gap-2">
+          <span className="text-sm font-extrabold text-water-800">
+            {t.hydro.flood[hydro.floodBand]}
+          </span>
+          <span className="text-[10px] font-semibold text-ink-soft">
+            {fmt(t.hydro.floodHint, {
+              from: hydro.referencePeriod.from,
+              to: hydro.referencePeriod.to,
+            })}
+          </span>
+        </div>
+        {hydro.percentile != null && hydro.recordForDate != null && (
+          <p className="mt-1.5 text-[11px] leading-snug text-ink-soft">
+            {fmt(t.hydro.percentileLine, {
+              p: hydro.percentile,
+              from: hydro.referencePeriod.from,
+              to: hydro.referencePeriod.to,
+              max: Math.round(hydro.recordForDate),
+            })}
+          </p>
+        )}
+      </div>
+
       <div className="mt-4 grid grid-cols-3 gap-2">
         {metrics.map((m) => (
           <div key={m.label} className="rounded-2xl bg-water-50/70 p-3">
@@ -202,15 +228,19 @@ export function ForecastPanel({
                     {t.hydro.unit}
                   </span>
                 </span>
+                {/*
+                  Раньше здесь стояло отклонение от медианы дня. В межень
+                  оно трёхзначное и красное — рядом со словом «межень» это
+                  читалось как тревога на ровном месте.
+                */}
                 <span
                   className={`block text-[10px] font-bold ${
-                    (u.anomalyPct ?? 0) > 20 ? "text-warn" : "text-ink-soft"
+                    u.floodBand === "high" || u.floodBand === "severe"
+                      ? "text-warn"
+                      : "text-ink-soft"
                   }`}
                 >
-                  {u.anomalyPct == null
-                    ? "—"
-                    : `${u.anomalyPct > 0 ? "+" : ""}${u.anomalyPct}%`}{" "}
-                  · {t.hydro.trend[u.trend]}
+                  {t.hydro.flood[u.floodBand]} · {t.hydro.trend[u.trend]}
                 </span>
               </span>
             </li>
@@ -225,6 +255,63 @@ export function ForecastPanel({
       <p className="mt-4 rounded-2xl bg-water-50 p-3 text-[11px] leading-relaxed text-ink-soft">
         {t.forecast.disclaimer}
       </p>
+
+      {/*
+        Ссылки на официальные источники. У Казгидромета нет открытого API —
+        портал data.egov.kz выдаёт ключ только через личный кабинет, а карту
+        постов крутит Shiny поверх websocket. Тянуть её скрейпингом в сервис,
+        по которому решают, эвакуироваться ли, нельзя: сломается молча и
+        соврёт. Поэтому не притворяемся, что интегрировались, а отправляем
+        человека к первоисточнику в одно касание.
+      */}
+      <div className="mt-4 border-t border-water-100 pt-4">
+        <div className="kicker !text-[0.62rem]">{t.forecast.official}</div>
+        <p className="lead mt-1.5 text-[11px]">{t.forecast.officialHint}</p>
+        <ul className="mt-3 space-y-1.5">
+          {[
+            {
+              href: "http://ecodata.kz:3838/app_dg_map_ru/",
+              title: t.forecast.officialKazhydromet,
+              hint: t.forecast.officialKazhydrometHint,
+            },
+            {
+              href: "https://www.gov.kz/memleket/entities/emer?lang=ru",
+              title: t.forecast.officialEmer,
+              hint: t.forecast.officialEmerHint,
+            },
+          ].map((l) => (
+            <li key={l.href}>
+              <a
+                href={l.href}
+                target="_blank"
+                rel="noreferrer noopener"
+                className="flex min-h-11 items-center gap-2 rounded-2xl bg-water-50/60 px-3 py-2 transition-colors hover:bg-water-100"
+              >
+                <span className="min-w-0 flex-1">
+                  <span className="block text-xs font-bold">{l.title}</span>
+                  <span className="block text-[10px] font-semibold text-ink-soft">
+                    {l.hint}
+                  </span>
+                </span>
+                <IconArrowRight className="h-4 w-4 shrink-0 text-water-500" />
+              </a>
+            </li>
+          ))}
+          <li>
+            <a
+              href="tel:112"
+              className="flex min-h-11 items-center gap-2 rounded-2xl bg-red-50 px-3 py-2"
+            >
+              <span className="min-w-0 flex-1">
+                <span className="block text-xs font-bold text-red-700">112</span>
+                <span className="block text-[10px] font-semibold text-red-600/80">
+                  {t.forecast.officialCall}
+                </span>
+              </span>
+            </a>
+          </li>
+        </ul>
+      </div>
     </div>
   );
 }

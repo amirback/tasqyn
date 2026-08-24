@@ -23,12 +23,17 @@ import { distanceM, formatDistance, geocode, insidePilot, URALSK } from "@/lib/g
 import {
   addPlace,
   loadPlaces,
-  markNotified,
-  NOTIFY_COOLDOWN_MS,
   PLACE_EMOJI,
   removePlace,
   type Place,
 } from "@/lib/places";
+import {
+  disablePush,
+  enablePush,
+  pushState,
+  syncAreas,
+  type PushState,
+} from "@/lib/pushClient";
 import { KIND_EMOJI, LEVEL_EMOJI, type Report } from "@/lib/types";
 
 const RADII = [300, 500, 1000, 2000, 3000];
@@ -40,9 +45,9 @@ export default function AlertsPage() {
 
   const [places, setPlaces] = useState<Place[]>([]);
   const [adding, setAdding] = useState(false);
-  const [permission, setPermission] = useState<NotificationPermission | "unsupported">(
-    "default",
-  );
+  const [push, setPush] = useState<PushState>("off");
+  const [pushBusy, setPushBusy] = useState(false);
+  const [pushError, setPushError] = useState(false);
 
   // Форма нового адреса
   const [label, setLabel] = useState("");
@@ -59,12 +64,15 @@ export default function AlertsPage() {
 
   useEffect(() => {
     setPlaces(loadPlaces());
-    setPermission(
-      typeof window !== "undefined" && "Notification" in window
-        ? Notification.permission
-        : "unsupported",
-    );
+    void pushState().then(setPush);
   }, []);
+
+  // Список адресов живёт в телефоне; сервер должен знать актуальный набор,
+  // иначе уведомления придут не туда или не придут вовсе.
+  useEffect(() => {
+    if (push !== "on") return;
+    void syncAreas(locale);
+  }, [places, push, locale]);
 
   /* Поиск адреса — с задержкой, чтобы не долбить Nominatim на каждую букву. */
   useEffect(() => {
@@ -102,35 +110,6 @@ export default function AlertsPage() {
     return map;
   }, [places, reports]);
 
-  /* Уведомления. Пока вкладка открыта — этого достаточно для пилота;
-     полноценный web-push появится вместе с серверными подписками. */
-  useEffect(() => {
-    if (permission !== "granted" || !places.length) return;
-    for (const p of places) {
-      const found = nearby.get(p.id) ?? [];
-      const serious = found.filter(
-        (r) => r.kind === "help" || r.kind === "road" || (r.level ?? 0) >= 2,
-      );
-      if (!serious.length) continue;
-      if (p.notifiedAt && Date.now() - p.notifiedAt < NOTIFY_COOLDOWN_MS) continue;
-
-      new Notification(fmt(t.alerts.alertTitle, { label: p.label }), {
-        body: fmt(t.alerts.alertBody, {
-          n: serious.length,
-          r: formatDistance(p.radiusM, locale),
-        }),
-        icon: "/icon-192.png",
-        tag: `tasqyn-${p.id}`,
-      });
-      markNotified(p.id);
-      setPlaces(loadPlaces());
-    }
-  }, [nearby, places, permission, t, fmt, locale]);
-
-  const requestPermission = async () => {
-    if (!("Notification" in window)) return;
-    setPermission(await Notification.requestPermission());
-  };
 
   const submit = () => {
     if (!insidePilot(point.lat, point.lng)) return;
@@ -171,48 +150,73 @@ export default function AlertsPage() {
           </header>
 
           {/* Уведомления */}
-          <div className="card mb-4 flex flex-wrap items-center justify-between gap-3 p-5">
-            <div className="flex items-center gap-3">
-              <IconBell
-                className={`h-6 w-6 ${
-                  permission === "granted" ? "text-water-600" : "text-ink-soft/50"
-                }`}
-              />
-              <div>
-                <div className="text-sm font-extrabold">
-                  {t.alerts.notifications}
-                </div>
-                <div className="text-[11px] font-semibold text-ink-soft">
-                  {permission === "granted"
-                    ? t.alerts.notificationsOn
-                    : permission === "denied"
-                      ? t.alerts.notificationsDenied
-                      : t.alerts.notificationsDisabled}
+          <div className="card mb-4 p-5">
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <div className="flex items-center gap-3">
+                <IconBell
+                  className={`h-6 w-6 ${
+                    push === "on" ? "text-water-600" : "text-ink-soft/50"
+                  }`}
+                />
+                <div>
+                  <div className="text-sm font-extrabold">
+                    {t.alerts.notifications}
+                  </div>
+                  <div className="text-[11px] font-semibold text-ink-soft">
+                    {push === "on"
+                      ? t.alerts.pushOn
+                      : push === "denied"
+                        ? t.alerts.pushDenied
+                        : push === "unsupported"
+                          ? t.alerts.pushUnsupported
+                          : t.alerts.pushOff}
+                  </div>
                 </div>
               </div>
-            </div>
-            {permission === "granted" ? (
-              <button
-                onClick={() =>
-                  new Notification(t.brand.name, {
-                    body: t.alerts.testBody,
-                    icon: "/icon-192.png",
-                  })
-                }
-                className="btn btn-ghost min-h-10 px-4 py-2 text-xs"
-              >
-                {t.alerts.test}
-              </button>
-            ) : (
-              permission !== "denied" &&
-              permission !== "unsupported" && (
+
+              {push === "on" ? (
                 <button
-                  onClick={() => void requestPermission()}
+                  onClick={async () => {
+                    setPushBusy(true);
+                    setPush(await disablePush());
+                    setPushBusy(false);
+                  }}
+                  disabled={pushBusy}
+                  className="btn btn-ghost min-h-10 px-4 py-2 text-xs"
+                >
+                  {t.alerts.pushDisable}
+                </button>
+              ) : push === "off" ? (
+                <button
+                  onClick={async () => {
+                    setPushBusy(true);
+                    setPushError(false);
+                    try {
+                      setPush(await enablePush(locale));
+                    } catch {
+                      setPushError(true);
+                    } finally {
+                      setPushBusy(false);
+                    }
+                  }}
+                  disabled={pushBusy || !places.length}
                   className="btn btn-primary min-h-10 px-4 py-2 text-xs"
                 >
-                  {t.alerts.notificationsOff}
+                  {pushBusy ? t.alerts.pushWorking : t.alerts.pushEnable}
                 </button>
-              )
+              ) : null}
+            </div>
+
+            {push === "off" && !places.length && (
+              <p className="lead mt-3 text-[11px]">{t.alerts.pushNoPlaces}</p>
+            )}
+            {pushError && (
+              <p className="mt-3 text-[11px] font-semibold text-alert">
+                {t.alerts.pushError}
+              </p>
+            )}
+            {push === "on" && (
+              <p className="lead mt-3 text-[11px]">{t.alerts.pushPrivacy}</p>
             )}
           </div>
 

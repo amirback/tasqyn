@@ -1,3 +1,5 @@
+import type { FlowBand, PeakBand } from "./climatology";
+
 /** Типы предметной области Tasqyn. Общие для клиента и сервера. */
 
 /** Что именно сообщает житель. */
@@ -56,7 +58,6 @@ export interface Subscription {
 export interface HydroDay {
   date: string;
   discharge: number | null;
-  dischargeMean: number | null;
   precipitation: number | null;
   tempMax: number | null;
 }
@@ -78,6 +79,18 @@ export interface HydroSnapshot {
   precip3d: number | null;
   days: HydroDay[];
   outlook: Outlook | null;
+  /** Где текущий расход относительно нормы 2004–2023 на эту дату. */
+  band: FlowBand;
+  percentile: number | null;
+  /**
+   * Насколько это большая вода по меркам самой реки — сравнение с годовыми
+   * пиками. Отвечает на вопрос «опасно ли», в отличие от перцентиля внутри
+   * дня: в августе четыре нормы это всё ещё межень.
+   */
+  floodBand: PeakBand;
+  /** Максимум расхода на эту дату за весь архив, м³/с. */
+  recordForDate: number | null;
+  referencePeriod: { from: string; to: string };
 }
 
 /**
@@ -95,6 +108,11 @@ export interface UpstreamPoint {
   normal: number | null;
   anomalyPct: number | null;
   trend: HydroTrend;
+  /** положение относительно 20-летней климатической нормы */
+  band: FlowBand;
+  percentile: number | null;
+  /** большая ли это вода по меркам самой реки */
+  floodBand: PeakBand;
 }
 
 /** Что модели ожидают в ближайшие две недели. Не официальный прогноз. */

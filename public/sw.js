@@ -6,7 +6,10 @@
  * Свежесть данных при этом важнее кеша, поэтому API всегда идёт в сеть первым.
  */
 
-const VERSION = "tasqyn-v1";
+const DEV =
+  self.location.hostname === "localhost" || self.location.hostname === "127.0.0.1";
+
+const VERSION = "tasqyn-v2";
 const SHELL = `${VERSION}-shell`;
 const RUNTIME = `${VERSION}-runtime`;
 
@@ -40,6 +43,8 @@ self.addEventListener("activate", (event) => {
 self.addEventListener("fetch", (event) => {
   const { request } = event;
   if (request.method !== "GET") return;
+  // В разработке ничего не кешируем: иначе правки не видно до сброса кеша.
+  if (DEV) return;
 
   const url = new URL(request.url);
 
@@ -105,3 +110,48 @@ function staleWhileRevalidate(request, cacheName) {
     return hit || network;
   });
 }
+
+/* ── Push-уведомления ─────────────────────────────────────── */
+
+self.addEventListener("push", (event) => {
+  let payload = {
+    title: "Tasqyn",
+    body: "Рядом появилось сообщение о воде.",
+    url: "/map",
+    tag: "tasqyn-water",
+  };
+  try {
+    if (event.data) payload = { ...payload, ...event.data.json() };
+  } catch {
+    /* прилетело неJSON — покажем текст по умолчанию */
+  }
+
+  event.waitUntil(
+    self.registration.showNotification(payload.title, {
+      body: payload.body,
+      icon: "/icon-192.png",
+      badge: "/icon-192.png",
+      tag: payload.tag,
+      renotify: true,
+      requireInteraction: false,
+      data: { url: payload.url },
+    }),
+  );
+});
+
+self.addEventListener("notificationclick", (event) => {
+  event.notification.close();
+  const url = event.notification.data?.url || "/map";
+  event.waitUntil(
+    self.clients.matchAll({ type: "window", includeUncontrolled: true }).then((list) => {
+      // Если вкладка Tasqyn уже открыта — не плодим новые.
+      for (const client of list) {
+        if (client.url.includes(self.location.origin) && "focus" in client) {
+          client.navigate(url);
+          return client.focus();
+        }
+      }
+      return self.clients.openWindow(url);
+    }),
+  );
+});
