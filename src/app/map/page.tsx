@@ -37,7 +37,7 @@ const PERIODS: { id: Period; key: "h6" | "h24" | "d7" | "all" }[] = [
 ];
 
 export default function MapPage() {
-  const { t, fmt } = useI18n();
+  const { t, fmt, plural } = useI18n();
   const ago = useTimeAgo();
   const [period, setPeriod] = useState<Period>("24h");
   const [kinds, setKinds] = useState<ReportKind[]>([]);
@@ -171,7 +171,10 @@ export default function MapPage() {
                   {risk ? t.risk.levels[risk.level] : t.common.loading}
                 </span>
                 <span className="block text-[10px] leading-tight font-semibold text-ink-soft">
-                  {fmt(t.map.reportsCount, { n: reports.length })}
+                  {fmt(t.map.reportsCount, {
+                    n: reports.length,
+                    word: plural(reports.length, t.map.reportsWord),
+                  })}
                 </span>
               </span>
               <span

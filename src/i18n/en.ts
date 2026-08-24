@@ -247,7 +247,8 @@ export const en: Dict = {
   map: {
     title: "Flood map",
     live: "Live",
-    reportsCount: "{n} reports",
+    reportsCount: "{n} {word}",
+    reportsWord: ["report", "reports", "reports"],
     empty: "No reports yet",
     emptyHint: "Be the first to mark what's happening on your street.",
     locate: "I'm here",
@@ -372,7 +373,7 @@ export const en: Dict = {
     empty: "No places yet",
     emptyHint: "Add the first one and the map starts watching it for you.",
     remove: "Remove",
-    nearby: "{n} reports nearby",
+    nearby: "{n} {word} nearby",
     quiet: "Quiet nearby",
     notifications: "Phone notifications",
     pushOn: "On — they arrive even with the browser closed",

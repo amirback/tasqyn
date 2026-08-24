@@ -136,6 +136,13 @@ export function assessRisk(
   else if (score >= 40) level = "warning";
   else if (score >= 18) level = "watch";
 
+  /*
+   * Пока в городе висит неотвеченная просьба о помощи, слово «Спокойно» на
+   * экране неуместно, каким бы низким ни вышел балл. Один SOS — ещё не
+   * городская катастрофа, поэтому поднимаем ровно до «Наблюдения».
+   */
+  if (help.length > 0 && level === "calm") level = "watch";
+
   if (reasons.length === 0) reasons.push("risk.reason.quiet");
 
   return { level, score, reasons };

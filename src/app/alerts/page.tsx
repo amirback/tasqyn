@@ -39,7 +39,7 @@ import { KIND_EMOJI, LEVEL_EMOJI, type Report } from "@/lib/types";
 const RADII = [300, 500, 1000, 2000, 3000];
 
 export default function AlertsPage() {
-  const { t, fmt, locale } = useI18n();
+  const { t, fmt, plural, locale } = useI18n();
   const { data } = useLive({ period: "24h", pollMs: 45000 });
   const { position, locate, loading: locating } = useGeolocation();
 
@@ -276,7 +276,10 @@ export default function AlertsPage() {
                             {found.length ? (
                               <>
                                 <IconAlert className="h-3.5 w-3.5" />
-                                {fmt(t.alerts.nearby, { n: found.length })}
+                                {fmt(t.alerts.nearby, {
+                                  n: found.length,
+                                  word: plural(found.length, t.map.reportsWord),
+                                })}
                               </>
                             ) : (
                               <>

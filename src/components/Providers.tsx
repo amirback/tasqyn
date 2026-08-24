@@ -8,7 +8,7 @@ import { ServiceWorker } from "./ServiceWorker";
 
 /** Плашка «нет сети / сообщения ушли». Обычно её не видно — и хорошо. */
 function ConnectionBanner() {
-  const { t, fmt } = useI18n();
+  const { t, fmt, plural } = useI18n();
   const [offline, setOffline] = useState(false);
   const [flushed, setFlushed] = useState(0);
 
@@ -36,7 +36,7 @@ function ConnectionBanner() {
     : flushed > 0
       ? {
           key: "sent",
-          text: `${fmt(t.map.reportsCount, { n: flushed })} · ${t.common.online}`,
+          text: `${fmt(t.map.reportsCount, { n: flushed, word: plural(flushed, t.map.reportsWord) })} · ${t.common.online}`,
           tone: "bg-safe text-white",
         }
       : null;

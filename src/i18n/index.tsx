@@ -28,6 +28,8 @@ interface I18nValue {
   tp: (path: string, vars?: Record<string, string | number>) => string;
   /** Подстановка {n} в готовую строку */
   fmt: (template: string, vars: Record<string, string | number>) => string;
+  /** «1 сообщение» / «2 сообщения» / «5 сообщений» */
+  plural: (n: number, forms: readonly string[]) => string;
 }
 
 const I18nContext = createContext<I18nValue | null>(null);
@@ -49,6 +51,27 @@ export function fmt(
   return template.replace(/\{(\w+)\}/g, (m, key) =>
     key in vars ? String(vars[key]) : m,
   );
+}
+
+/**
+ * Выбор формы слова по числу.
+ *
+ * В русском и казахском «1 сообщений» режет глаз, а на экране, где счётчик
+ * меняется каждую минуту, такое видно постоянно. Формы задаются в словаре
+ * тройкой: одна / несколько / много.
+ */
+export function plural(
+  n: number,
+  forms: readonly string[],
+  locale: Locale,
+): string {
+  const [one, few, many] = [forms[0] ?? "", forms[1] ?? forms[0] ?? "", forms[2] ?? forms[0] ?? ""];
+  if (locale !== "ru") return n === 1 ? one : many;
+  const mod10 = n % 10;
+  const mod100 = n % 100;
+  if (mod10 === 1 && mod100 !== 11) return one;
+  if (mod10 >= 2 && mod10 <= 4 && (mod100 < 12 || mod100 > 14)) return few;
+  return many;
 }
 
 export function I18nProvider({ children }: { children: ReactNode }) {
@@ -79,6 +102,7 @@ export function I18nProvider({ children }: { children: ReactNode }) {
       setLocale,
       t: dict,
       fmt,
+      plural: (n, forms) => plural(n, forms, locale),
       tp: (path, vars) => {
         const raw = path.split(".").reduce<unknown>((acc, key) => {
           if (acc && typeof acc === "object" && key in acc) {
